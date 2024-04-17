@@ -9,7 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ValidationException extends RuntimeException {
 
-    private List<ValidationExceptionDataDTO> validationExceptionList;
+    private final List<ValidationExceptionDataDTO> validationExceptionList;
 
     public ValidationException(String field, String message) {
         this.validationExceptionList = List.of(new ValidationExceptionDataDTO(field, message));

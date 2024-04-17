@@ -1,12 +1,10 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
 import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService;
 import com.ferraz.controledepagamentosbackend.infra.security.TokenService;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,15 +17,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/login")
 public class AuthenticationController {
 
-    @Autowired
     private AuthenticationManager authenticationManager;
-    @Autowired
     private TokenService tokenService;
-    @Autowired
-    private AuthenticationService service;
+
+    public AuthenticationController(AuthenticationManager authenticationManager, TokenService tokenService) {
+        this.authenticationManager = authenticationManager;
+        this.tokenService = tokenService;
+    }
 
     @PostMapping
-    public ResponseEntity login(@RequestBody @Valid AuthenticationDTO authenticationDTO) {
+    public ResponseEntity<TokenDTO> login(@RequestBody @Valid AuthenticationDTO authenticationDTO) {
         var authenticationToken = new UsernamePasswordAuthenticationToken(authenticationDTO.email(), authenticationDTO.password());
         var authentication = authenticationManager.authenticate(authenticationToken);
         var token = tokenService.generateToken((User) authentication.getPrincipal());
