@@ -1,5 +1,6 @@
 package com.ferraz.controledepagamentosbackend.domain.user;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -11,9 +12,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class UserTest {
 
+
+
     @Test
-    public void testGetters() {
-        // Given
+    @DisplayName("Deve retornar valores informados quando busca usando os getters")
+    void testGetters() {
+        // Given / When
         Long id = 1l;
         String nome = "Usuario";
         String email = "usuario@mail.com";
@@ -27,8 +31,6 @@ class UserTest {
         LocalDateTime updateDatetime = LocalDateTime.now().plusHours(1);
         User updateUser = new User();
         updateUser.setId(3l);
-
-        // When
         User user = new User(id, nome, email, senha, salario, perfil, status, createDatetime, createUser, updateDatetime, updateUser);
 
         // Then
@@ -50,6 +52,56 @@ class UserTest {
         assertThat(user.isEnabled()).isEqualTo(status == UserStatus.ATIVO);
 
         assertThat(user.getAuthorities()).isEqualTo(List.of(new SimpleGrantedAuthority(perfil)));
+    }
+
+    @Test
+    @DisplayName("Deve informar que usuario nao esta habilitado quando status for INATIVO")
+    void testIsEnabled_False() {
+        // Given
+        User user = createUser();
+        user.setStatus(UserStatus.INATIVO);
+
+        // When
+        boolean enabled = user.isEnabled();
+
+        // Then
+        assertThat(enabled).isFalse();
+    }
+
+    @Test
+    @DisplayName("Equals e Hashcode devem considerar somente campos id, email e nome")
+    void testIsEqualsAndHashcode() {
+        // Given
+        User user = createUser();
+        User user2 = createUser();
+        user2.setPerfil("abc"); // troca campo irrelevante
+        User user3 = createUser();
+        user3.setId(99l); // troca campo relevante
+
+        // When
+        boolean equals1 = user.equals(user2);
+        boolean equals2 = user.equals(user3);
+
+        // Then
+        assertThat(equals1).isTrue();
+        assertThat(equals2).isFalse();
+    }
+
+    private static User createUser() {
+        Long id = 1l;
+        String nome = "Usuario";
+        String email = "usuario@mail.com";
+        String senha = "1234";
+        BigDecimal salario = new BigDecimal("1234");
+        String perfil = "ROLE_ADMIN";
+        UserStatus status = UserStatus.ATIVO;
+        LocalDateTime createDatetime = LocalDateTime.now();
+        User createUser = new User();
+        createUser.setId(2l);
+        LocalDateTime updateDatetime = LocalDateTime.now().plusHours(1);
+        User updateUser = new User();
+        updateUser.setId(3l);
+        return new User(id, nome, email, senha, salario, perfil, status, createDatetime, createUser, updateDatetime, updateUser);
     }
 
 }
