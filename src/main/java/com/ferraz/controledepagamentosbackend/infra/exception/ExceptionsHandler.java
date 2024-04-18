@@ -35,7 +35,7 @@ public class ExceptionsHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(new ExceptionMessageDTO(exception.getMessage()));
     }
     @ExceptionHandler(LockedException.class)
-    public ResponseEntity<ExceptionMessageDTO> handleConstraintViolation(LockedException exception) {
+    public ResponseEntity<ExceptionMessageDTO> handleLocked(LockedException exception) {
         String message = "Sua conta ainda está bloqueada. Favor confirmá-la pelo link enviado ao seu email.";
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(new ExceptionMessageDTO(message));
     }
