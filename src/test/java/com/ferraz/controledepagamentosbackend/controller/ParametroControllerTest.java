@@ -1,6 +1,6 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import com.ferraz.controledepagamentosbackend.domain.parameters.ParameterRepository;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.NovoParametroDTO;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,13 +28,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @AutoConfigureJsonTesters
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ParameterControllerTest {
+class ParametroControllerTest {
     @Autowired
     private MockMvc mvc;
     @Autowired
     private JacksonTester<NovoParametroDTO> parameterDTOJackson;
     @Autowired
-    private ParameterRepository parameterRepository;
+    private ParametroRepository parametroRepository;
 
 
 
@@ -46,9 +46,9 @@ class ParameterControllerTest {
 
     @Test
     @DisplayName("Deve criar um parametro")
-    void testCreateParameters() throws Exception {
+    void testCriarParametros() throws Exception {
         //Given
-        NovoParametroDTO novoParametroDTO = new NovoParametroDTO("name_test", 999.99 ,"tipo_test");
+        NovoParametroDTO novoParametroDTO = new NovoParametroDTO("name_test", "valor_test");
         String parameterJson = parameterDTOJackson.write(novoParametroDTO).getJson();
         String endpoint = "/parametros";
         RequestBuilder requestBuilder = post(endpoint).contentType(APPLICATION_JSON).content(parameterJson);
