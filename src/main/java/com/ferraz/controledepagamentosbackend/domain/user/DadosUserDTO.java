@@ -29,11 +29,7 @@ public record DadosUserDTO(
 		
 		@NotBlank
 		@NotNull
-		String perfil,
-		
-		@NotBlank
-		@NotNull
-		String status
+		String perfil
 
 		) {
 

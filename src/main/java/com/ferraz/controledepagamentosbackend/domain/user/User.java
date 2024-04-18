@@ -48,8 +48,9 @@ public class User implements UserDetails {
     @Column(name="PERFIL", nullable = false)
     private String perfil;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="STATUS")
-    private String status;
+    private UserStatus status;
 
     @Column(name="CREATE_DATETIME")
     private LocalDateTime createDatetime;
@@ -97,7 +98,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return this.status == UserStatus.ATIVO;
     }
 
 	public User(DadosUserDTO dados) {
@@ -106,7 +107,7 @@ public class User implements UserDetails {
 		this.senha = dados.senha();
 		this.salario = dados.salario();
 		this.perfil = dados.perfil();
-		this.status = dados.status();
+		this.status = UserStatus.ATIVO;
 		this.createDatetime = LocalDateTime.now();
 
 	}
