@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
+import static com.ferraz.controledepagamentosbackend.domain.user.UserStatus.ATIVO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -48,7 +49,7 @@ class AuthenticationControllerTest {
         String email = "teste@teste.com";
         String password = "password";
         String name = "Nome Teste";
-        this.user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), "ROLE_ADMIN", "ATIVO", LocalDateTime.now(), null, null, null);
+        this.user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), "ROLE_ADMIN", ATIVO, LocalDateTime.now(), null, null, null);
         userRepository.save(user);
     }
 

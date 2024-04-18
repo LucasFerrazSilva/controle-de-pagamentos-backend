@@ -45,8 +45,9 @@ public class User implements UserDetails {
     @Column(name="PERFIL", nullable = false)
     private String perfil;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="STATUS")
-    private String status;
+    private UserStatus status;
 
     @Column(name="CREATE_DATETIME")
     private LocalDateTime createDatetime;
@@ -92,6 +93,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return this.status == UserStatus.ATIVO;
     }
 }

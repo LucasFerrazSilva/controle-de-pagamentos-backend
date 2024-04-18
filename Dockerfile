@@ -1,4 +1,4 @@
-FROM maven:3.8.5-openjdk-17 as build
+FROM maven:3.8.5-openjdk-17 AS build
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 ADD . /usr/src/app
