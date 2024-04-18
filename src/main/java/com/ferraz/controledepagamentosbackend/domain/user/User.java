@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -22,7 +23,9 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"id", "email", "name"})
 public class User implements UserDetails {
+	
 
+	
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TB_USERS_SEQ")
     @SequenceGenerator(name = "TB_USERS_SEQ", sequenceName = "TB_USERS_SEQ", allocationSize = 1)
@@ -51,13 +54,15 @@ public class User implements UserDetails {
     @Column(name="CREATE_DATETIME")
     private LocalDateTime createDatetime;
 
-    @Column(name="CREATE_USER_ID")
+    @ManyToOne
+    @JoinColumn(name="CREATE_USER_ID")
     private User createUser;
 
     @Column(name="UPDATE_DATETIME")
     private LocalDateTime updateDatetime;
 
-    @Column(name="UPDATE_USER_ID")
+    @ManyToOne
+    @JoinColumn(name="UPDATE_USER_ID")
     private User updateUser;
 
     @Override
@@ -94,4 +99,15 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+	public User(DadosUserDTO dados) {
+		this.nome = dados.nome();
+		this.email = dados.email();
+		this.senha = dados.senha();
+		this.salario = dados.salario();
+		this.perfil = dados.perfil();
+		this.status = dados.status();
+		this.createDatetime = LocalDateTime.now();
+
+	}
 }

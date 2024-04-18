@@ -26,5 +26,5 @@ scrape_configs:
       username: user
       password: 7a2ed7a8-fe83-4989-b812-700196ab22b4
     static_configs:
-      - targets: ['192.168.100.13:8080']
+      - targets: ['192.168.0.19:8080']
       #- targets: ['controle-de-pagamentos-backend-main.onrender.com']
