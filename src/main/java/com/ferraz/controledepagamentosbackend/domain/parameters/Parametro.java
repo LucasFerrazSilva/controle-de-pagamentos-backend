@@ -1,6 +1,7 @@
 package com.ferraz.controledepagamentosbackend.domain.parameters;
 
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.NovoParametroDTO;
+import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,7 +27,7 @@ public class Parametro {
     @Column(name="NOME", nullable = false)
     private String nome;
 
-    @Column(name="NOME", nullable = false)
+    @Column(name="VALOR", nullable = false)
     private String valor;
 
     @Column(name="STATUS")
@@ -46,6 +47,11 @@ public class Parametro {
     @JoinColumn(name="UPDATE_USER_ID")
     private User updateUser;
 
+    public void setUpdateUserAndTime(User user){
+        this.setUpdateUser(user);
+        this.setUpdateDatetime(LocalDateTime.now());
+    }
+
     public Parametro(NovoParametroDTO novoParametroDTO, User loggedUser) {
         this.nome = novoParametroDTO.nome();
         this.valor = novoParametroDTO.valor();
@@ -53,4 +59,5 @@ public class Parametro {
         this.createUser = loggedUser;
         this.createDatetime = LocalDateTime.now();
     }
+
 }
