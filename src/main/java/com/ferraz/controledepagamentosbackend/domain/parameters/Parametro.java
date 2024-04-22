@@ -1,7 +1,6 @@
 package com.ferraz.controledepagamentosbackend.domain.parameters;
 
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.NovoParametroDTO;
-import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,7 +20,7 @@ public class Parametro {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TB_PARAMETERS_SEQ")
     @SequenceGenerator(name = "TB_PARAMETERS_SEQ", sequenceName = "TB_PARAMETERS_SEQ", allocationSize = 1)
-    @Column(name="ID_PARAMETERS")
+    @Column(name="ID_PARAMETER")
     private Long id;
 
     @Column(name="NOME", nullable = false)
@@ -47,7 +46,8 @@ public class Parametro {
     @JoinColumn(name="UPDATE_USER_ID")
     private User updateUser;
 
-    public void setUpdateUserAndTime(User user){
+    public void deactivate(User user){
+        this.setStatus(ParametroStatus.INATIVO);
         this.setUpdateUser(user);
         this.setUpdateDatetime(LocalDateTime.now());
     }
