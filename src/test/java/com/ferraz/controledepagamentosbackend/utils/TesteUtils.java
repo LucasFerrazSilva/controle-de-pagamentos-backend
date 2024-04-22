@@ -4,6 +4,7 @@ import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @Service
 @ActiveProfiles("test")
+@AutoConfigureJsonTesters
 public class TesteUtils {
 
 
