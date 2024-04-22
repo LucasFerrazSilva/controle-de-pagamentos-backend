@@ -1,6 +1,7 @@
 package com.ferraz.controledepagamentosbackend.domain.parameters;
 
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.NovoParametroDTO;
+import com.ferraz.controledepagamentosbackend.domain.parameters.dto.ParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import org.springframework.beans.BeanUtils;
@@ -9,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class ParametroService {
@@ -31,35 +33,35 @@ public class ParametroService {
 
     }
 
-    public List<Parametro> findAll(){
-        return parametroRepository.findAll();
+    public List<ParametroDTO> findAll(){
+        return parametroRepository.findAll().stream().map(ParametroDTO::new).toList();
     }
-    public Parametro findOne(Long id){
-        return parametroRepository.findById(id).orElseThrow(() -> new NullPointerException(PARAMETRO_NAO_ENCONTRADO) );
+    public ParametroDTO findOne(Long id){
+        Parametro parametro = parametroRepository.findById(id).orElseThrow(() -> new NoSuchElementException(PARAMETRO_NAO_ENCONTRADO));
+
+        return new ParametroDTO(parametro.getId(),parametro.getNome(), parametro.getValor());
     }
 
-    public Parametro updateParametro(Long id, UpdateParametroDTO updateParametroDTO){
+    public Parametro update(Long id, UpdateParametroDTO updateParametroDTO){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
         Parametro parametro = parametroRepository.findById(id)
-                .orElseThrow(() -> new NullPointerException(PARAMETRO_NAO_ENCONTRADO));
+                .orElseThrow(() -> new NoSuchElementException(PARAMETRO_NAO_ENCONTRADO));
 
+        parametro.setUpdateUser(user);
         BeanUtils.copyProperties(updateParametroDTO, parametro, "id");
 
-        parametro.setUpdateUserAndTime(user);
         return parametroRepository.save(parametro);
     }
 
-    public void deactivateParametro(Long id){
+    public void deactivate(Long id){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
 
         Parametro parametro = parametroRepository.findById(id)
-                .orElseThrow(() -> new NullPointerException(PARAMETRO_NAO_ENCONTRADO));
+                .orElseThrow(() -> new NoSuchElementException(PARAMETRO_NAO_ENCONTRADO));
 
-        parametro.setStatus(ParametroStatus.INATIVO);
-        parametro.setUpdateUserAndTime(user);
-
+        parametro.deactivate(user);
         parametroRepository.save(parametro);
 
     }
