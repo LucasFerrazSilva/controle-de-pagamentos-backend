@@ -83,7 +83,7 @@ class ParametroControllerTest {
         String name = "Nome Teste";
         this.user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), "ROLE_ADMIN", ATIVO, LocalDateTime.now(), null, null, null);
         userRepository.save(user);
-        httpHeaders = testeUtils.login(this.user);
+        httpHeaders = testeUtils.login(mvc, this.user);
     }
 
     @BeforeEach

@@ -21,8 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @ActiveProfiles("test")
 public class TesteUtils {
 
-    @Autowired
-    private MockMvc mvc;
+
     @Autowired
     private JacksonTester<TokenDTO> tokenDTOJackson;
 
@@ -30,7 +29,7 @@ public class TesteUtils {
     private JacksonTester<AuthenticationDTO> authenticationDTOJackson;
 
     public static String DEFAULT_PASSWORD = "password";
-    public HttpHeaders login(User user) throws Exception {
+    public HttpHeaders login(MockMvc mvc, User user) throws Exception {
         String email = user.getEmail();
         String password = DEFAULT_PASSWORD;
         AuthenticationDTO authenticationDTO = new AuthenticationDTO(email, password);
