@@ -3,6 +3,7 @@ package com.ferraz.controledepagamentosbackend.controller;
 import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
 import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroService;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.NovoParametroDTO;
+import com.ferraz.controledepagamentosbackend.domain.parameters.dto.ParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -38,27 +39,27 @@ public class ParametroController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Parametro>> getAllParameters(){
-        List<Parametro> parametros = parametroService.findAll();
+    public ResponseEntity<List<ParametroDTO>> getAllParameters(){
+        List<ParametroDTO> parametros = parametroService.findAll();
         return ResponseEntity.status(HttpStatus.OK).body(parametros);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Parametro> getOneParameter(@PathVariable(value = "id") Long id){
-        Parametro parametro = parametroService.findOne(id);
+    public ResponseEntity<ParametroDTO> getOneParameter(@PathVariable(value = "id") Long id){
+        ParametroDTO parametro = parametroService.findOne(id);
         return ResponseEntity.status(HttpStatus.OK).body(parametro);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Object> updateParameter(@PathVariable(value = "id") Long id, @RequestBody @Valid UpdateParametroDTO updateParametroDTO){
-        parametroService.updateParametro(id, updateParametroDTO);
-
-        return ResponseEntity.status(HttpStatus.OK).body(updateParametroDTO);
+        Parametro parametro = parametroService.update(id, updateParametroDTO);
+        UpdateParametroDTO updatedParametroDTO = new UpdateParametroDTO(parametro.getId(), parametro.getNome(), parametro.getValor());
+        return ResponseEntity.status(HttpStatus.OK).body(updatedParametroDTO);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deactivateParameter(@PathVariable(value = "id") Long id){
-        parametroService.deactivateParametro(id);
+        parametroService.deactivate(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
