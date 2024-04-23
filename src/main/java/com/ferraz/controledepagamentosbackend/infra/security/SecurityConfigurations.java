@@ -38,10 +38,13 @@ public class SecurityConfigurations {
                 authorizeHttpRequests.requestMatchers(HttpMethod.POST).permitAll()
                 .requestMatchers(HttpMethod.GET).permitAll().requestMatchers(HttpMethod.DELETE).permitAll()
                 .requestMatchers(HttpMethod.PUT).permitAll()
-                        .anyRequest().authenticated()     
-                )
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+                        .anyRequest().authenticated())     
+                    .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
+                        .requestMatchers(HttpMethod.POST, "/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/parametros").permitAll()
+                        .anyRequest().authenticated())
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class).
+                build();
     }
 
     @Bean

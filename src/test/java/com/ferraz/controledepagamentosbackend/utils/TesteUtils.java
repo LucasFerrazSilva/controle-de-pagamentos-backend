@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
@@ -20,9 +19,8 @@ import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
 
-@ActiveProfiles("test")
 public class TesteUtils {
-    
+
     public static String DEFAULT_PASSWORD = "password";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -41,6 +39,7 @@ public class TesteUtils {
         httpHeaders.add("Authorization", headers);
         return httpHeaders;
     }
+
     
     public static User createUser(UserRepository userRepository) {
     	User user = new User();
