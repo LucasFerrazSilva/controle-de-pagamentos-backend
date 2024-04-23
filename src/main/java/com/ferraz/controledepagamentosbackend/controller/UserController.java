@@ -1,57 +1,66 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.net.URI;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import com.ferraz.controledepagamentosbackend.domain.user.DadosListagemUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.DadosUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UserService;
+import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosAtualizacaoUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosListagemUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.DTO.UserDTO;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
 	
-	private UserRepository repository;
-	private BCryptPasswordEncoder passwordEncoder;
+	private final UserService userService;
 	
-	public UserController(UserRepository repository, BCryptPasswordEncoder passwordEncoder) {
-		this.repository = repository;
-		this.passwordEncoder = passwordEncoder;
+	public UserController(UserService userService) {
+		this.userService = userService;
 	}
 	
 	@PostMapping
-	@Transactional
-	public ResponseEntity criar(@RequestBody @Valid DadosUserDTO dados) {
-		var user = new User(dados);
-		user.setSenha(passwordEncoder.encode(dados.senha()));
-		repository.save(user);
-		return ResponseEntity.ok("User Criado");
+	public ResponseEntity<UserDTO> criar(@RequestBody @Valid DadosUserDTO dados, UriComponentsBuilder uriComponentsBuilder) {
+		User user = userService.criarUsuario(dados);
+		UserDTO userDTO = new UserDTO(user);
+		URI uri = uriComponentsBuilder.path("/user/{id}").buildAndExpand(user.getId()).toUri();
+		return ResponseEntity.created(uri).body(userDTO);
 	}
 	
 	@GetMapping
-	public ResponseEntity listar() {
-		var lista = repository.findAll().stream().map(DadosListagemUserDTO::new);
-		return ResponseEntity.ok(lista);
+	public ResponseEntity<List<DadosListagemUserDTO>> listar() {
+		return ResponseEntity.ok().body(userService.listarUsuarios());
 	}
 	
 	@DeleteMapping("/{id}")
-	@Transactional
-	public ResponseEntity delete(@PathVariable("id") Long id) {
-		repository.deleteById(id);
-		return ResponseEntity.ok("Deletado");
+	public ResponseEntity<UserDTO> delete(@PathVariable("id") Long id) {
+		userService.deletarUsuario(id);
+		return ResponseEntity.noContent().build();
 	}
 	
+	@PutMapping("/{id}")
+	public ResponseEntity<UserDTO> alterar(@PathVariable Long id, @RequestBody @Valid DadosAtualizacaoUserDTO dados) {
+		User user = userService.alterarUsuario(id, dados);
+		UserDTO userDTO = new UserDTO(user);
+		return ResponseEntity.ok(userDTO);
+	}
+	
+	@GetMapping("/{id}")
+	public ResponseEntity<DadosListagemUserDTO> listarUserPorId(@PathVariable Long id){
+		return userService.listarUserPorId(id);
+	}
 }

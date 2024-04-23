@@ -1,20 +1,33 @@
 package com.ferraz.controledepagamentosbackend.domain.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosAtualizacaoUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosUserDTO;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name="TB_USERS")
@@ -23,8 +36,6 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"id", "email", "name"})
 public class User implements UserDetails {
-	
-
 	
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TB_USERS_SEQ")
@@ -53,7 +64,7 @@ public class User implements UserDetails {
     private UserStatus status;
 
     @Column(name="CREATE_DATETIME")
-    private LocalDateTime createDatetime;
+    private LocalDateTime createDateTime;
 
     @ManyToOne
     @JoinColumn(name="CREATE_USER_ID")
@@ -108,7 +119,25 @@ public class User implements UserDetails {
 		this.salario = dados.salario();
 		this.perfil = dados.perfil();
 		this.status = UserStatus.ATIVO;
-		this.createDatetime = LocalDateTime.now();
+		this.createDateTime = LocalDateTime.now();
 
+	}
+	
+	public void atualizar(DadosAtualizacaoUserDTO dados) {
+		if(dados.nome() != null) {
+			this.nome = dados.nome();
+		}
+		if(dados.email() != null) {
+			this.email = dados.email();
+		}
+		if(dados.senha() != null) {
+			this.senha = dados.senha();
+		}
+		if(dados.salario() != null) {
+			this.salario = dados.salario();
+		}
+		if(dados.perfil() != null) {
+			this.perfil = dados.perfil();
+		}
 	}
 }
