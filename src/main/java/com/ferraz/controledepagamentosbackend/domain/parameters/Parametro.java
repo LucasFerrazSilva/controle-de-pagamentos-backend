@@ -35,14 +35,14 @@ public class Parametro {
     @Column(name="CREATE_DATETIME")
     private LocalDateTime createDatetime;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="CREATE_USER_ID")
     private User createUser;
 
     @Column(name="UPDATE_DATETIME")
     private LocalDateTime updateDatetime;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="UPDATE_USER_ID")
     private User updateUser;
 

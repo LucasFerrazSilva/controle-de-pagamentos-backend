@@ -14,9 +14,7 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-@ActiveProfiles("test")
 public class TesteUtils {
-    ;
 
     public static String DEFAULT_PASSWORD = "password";
 
