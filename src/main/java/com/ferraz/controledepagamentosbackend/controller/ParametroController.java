@@ -26,7 +26,7 @@ public class ParametroController {
 
 
     @PostMapping
-    public ResponseEntity<Object> createParameter(@RequestBody @Valid NovoParametroDTO novoParametroDTO){
+    public ResponseEntity<Object> create(@RequestBody @Valid NovoParametroDTO novoParametroDTO){
         Parametro novoParametro = parametroService.save(novoParametroDTO);
 
         URI location = ServletUriComponentsBuilder
@@ -41,7 +41,7 @@ public class ParametroController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ParametroDTO>> getAllParameters(){
+    public ResponseEntity<List<ParametroDTO>> getAll(){
         List<Parametro> parametros = parametroService.findAll();
         List<ParametroDTO> parametrosDTO = parametros.stream().map(ParametroDTO::new).toList();
         return ResponseEntity.status(HttpStatus.OK).body(parametrosDTO);
