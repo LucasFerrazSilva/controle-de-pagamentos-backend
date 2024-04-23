@@ -52,9 +52,6 @@ class ParametroControllerTest {
     private JacksonTester<UpdateParametroDTO> updateParameterDTOJackson;
 
     @Autowired
-    private TesteUtils testeUtils;
-
-    @Autowired
     private ParametroRepository parametroRepository;
 
     @Autowired
@@ -66,32 +63,34 @@ class ParametroControllerTest {
 
     private Parametro parametro1;
 
+    int contador;
 
     @AfterAll
     @Transactional
     void afterAll() {
         parametroRepository.deleteAll();
-        userRepository.deleteAll();
     }
 
     @BeforeAll
     @Transactional
     void beforeAll() throws Exception {
+        contador = 0;
         Long id = 1L;
         String email = "teste@teste.com";
         String password = TesteUtils.DEFAULT_PASSWORD;
         String name = "Nome Teste";
         this.user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), "ROLE_ADMIN", ATIVO, LocalDateTime.now(), null, null, null);
-        userRepository.save(user);
-        httpHeaders = testeUtils.login(mvc, this.user);
+
+        this.user = userRepository.save(user);
+        httpHeaders = TesteUtils.login(mvc, this.user);
+
     }
 
     @BeforeEach
     @Transactional
     void beforeEach(){
-        parametroRepository.deleteAll();
 
-        NovoParametroDTO novoParametroDTO1 = new NovoParametroDTO("parametro_1", "valor_1");
+        NovoParametroDTO novoParametroDTO1 = new NovoParametroDTO("parametro_" + contador, "valor_1");
         parametro1 = parametroRepository.save(new Parametro(novoParametroDTO1, this.user));
 
         NovoParametroDTO novoParametroDTO2 = new NovoParametroDTO("parametro_2", "valor_2");
@@ -101,6 +100,12 @@ class ParametroControllerTest {
         parametroRepository.save(new Parametro(novoParametroDTO3, this.user));
     }
 
+    @AfterEach
+    @Transactional
+    void afterEach(){
+        contador++;
+        parametroRepository.deleteAll();
+    }
     @Test
     @DisplayName("Deve criar um parametro")
     void testCriarParametros() throws Exception {
@@ -150,7 +155,7 @@ class ParametroControllerTest {
         // Then
         List<ParametroDTO> parametroList = objectMapper.readValue(response.getContentAsString(), new TypeReference<List<ParametroDTO>>(){});
         assertThat(parametroList).hasSize(3);
-        assertThat(parametroList.get(0).nome()).isEqualTo("parametro_1");
+        assertThat(parametroList.get(0).nome()).isEqualTo("parametro_" + contador);
         assertThat(parametroList.get(1).valor()).isEqualTo("valor_2");
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
     }
