@@ -29,22 +29,19 @@ public class SecurityConfigurations {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
-                .cors(withDefaults())
-                .csrf(CsrfConfigurer::disable)
-                .sessionManagement(sessionManagement ->
-                    sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(authorizeHttpRequests ->
-                authorizeHttpRequests.requestMatchers(HttpMethod.POST).permitAll()
-                .requestMatchers(HttpMethod.GET).permitAll().requestMatchers(HttpMethod.DELETE).permitAll()
-                .requestMatchers(HttpMethod.PUT).permitAll()
-                        .anyRequest().authenticated())     
-                    .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-                        .requestMatchers(HttpMethod.POST, "/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/parametros").permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class).
-                build();
+        		.cors(withDefaults())
+        	    .csrf(CsrfConfigurer::disable)
+        	    .sessionManagement(sessionManagement ->
+        	        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        	    )
+        	    .authorizeHttpRequests(authorizeHttpRequests ->
+        	        authorizeHttpRequests
+        	            .requestMatchers(HttpMethod.POST, "/login").permitAll()
+        	            .requestMatchers(HttpMethod.POST, "/parametros").permitAll()
+        	            .anyRequest().authenticated()
+        	    )
+        	    .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+        	    .build();
     }
 
     @Bean

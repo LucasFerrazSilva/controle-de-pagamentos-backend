@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.http.HttpHeaders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
@@ -33,6 +35,7 @@ import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosAtualizacaoUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosUserDTO;
+import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 
 import jakarta.transaction.Transactional;
 
@@ -50,6 +53,8 @@ public class UserControllerTest {
     @Autowired
     private UserRepository userRepository;
     
+    private HttpHeaders headers;
+    
     @AfterAll
     @Transactional
     void afterAll() {
@@ -57,10 +62,10 @@ public class UserControllerTest {
     }
     
     @BeforeEach
-    void beforeEach() {
+    void beforeEach() throws Exception {
     	userRepository.deleteAll();
-    }
-   
+    	headers = TesteUtils.login(mvc, userRepository);
+    } 
     
     @Test
     @DisplayName("Deve ser criado um usuario com as informações corretas e retornar 201 CREATED")
@@ -74,7 +79,7 @@ public class UserControllerTest {
     	DadosUserDTO dadosUserDTO = new DadosUserDTO(nome, email, senha, salario, perfil);
     	String jsonString = objectMapper.writeValueAsString(dadosUserDTO);
     	
-    	RequestBuilder request = post(endpoint).contentType(APPLICATION_JSON).content(jsonString);
+    	RequestBuilder request = post(endpoint).contentType(APPLICATION_JSON).content(jsonString).headers(headers);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
@@ -98,7 +103,7 @@ public class UserControllerTest {
     	String jsonString = mapper.writeValueAsString(dadosUserDTO);
     	
     	//Requisicao e resposta
-    	RequestBuilder builder = post(endpoint).contentType(APPLICATION_JSON).content(jsonString);
+    	RequestBuilder builder = post(endpoint).contentType(APPLICATION_JSON).content(jsonString).headers(headers);
     	MockHttpServletResponse response = mvc.perform(builder).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
@@ -107,7 +112,7 @@ public class UserControllerTest {
     @Test
     @DisplayName("Deve retornar 200 OK para listar usuarios")
     void listUsersTest() throws Exception {
-    	RequestBuilder request = get(endpoint);
+    	RequestBuilder request = get(endpoint).headers(headers);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -117,7 +122,7 @@ public class UserControllerTest {
     @DisplayName("Deve deletar o usuario corretamente e retornar 204 no content")
     void deleteUserSucessTest() throws Exception {
     	User user = createUser(userRepository);
-    	RequestBuilder request = delete(endpoint + "/" + user.getId());
+    	RequestBuilder request = delete(endpoint + "/" + user.getId()).headers(headers);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
@@ -125,7 +130,7 @@ public class UserControllerTest {
     @Test
     @DisplayName("Deve Retornar 404 Not Found deletando um user com id invalido")
     void deleteUserInvalidIdTest() throws Exception {
-    	RequestBuilder request = delete(endpoint + "/" + 100);
+    	RequestBuilder request = delete(endpoint + "/" + 100).headers(headers);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -143,7 +148,8 @@ public class UserControllerTest {
     	DadosAtualizacaoUserDTO dto = new DadosAtualizacaoUserDTO(nome, null, null, null, null);
     	String jsonDto = mapper.writeValueAsString(dto);
     	
-    	RequestBuilder request = put(endpoint + "/" + user.getId()).contentType(APPLICATION_JSON).content(jsonDto);
+    	RequestBuilder request = put(endpoint + "/" + user.getId()).contentType(APPLICATION_JSON)
+    			.content(jsonDto).headers(headers);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -171,7 +177,8 @@ public class UserControllerTest {
     	
     	DadosAtualizacaoUserDTO dto = new DadosAtualizacaoUserDTO(null, email, null, null, null);
     	String jsonDto = mapper.writeValueAsString(dto);
-    	RequestBuilder request = put(endpoint + "/" + user2.getId()).contentType(APPLICATION_JSON).content(jsonDto);
+    	RequestBuilder request = put(endpoint + "/" + user2.getId()).contentType(APPLICATION_JSON)
+    			.content(jsonDto).headers(headers);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
@@ -181,7 +188,7 @@ public class UserControllerTest {
     @DisplayName("Deve listar corretamente um usuario com ID existente e retornar 200 OK")
     void listarUserByIdTest() throws Exception{
     	User user = createUser(userRepository);
-    	RequestBuilder request = get(endpoint + "/" + user.getId());
+    	RequestBuilder request = get(endpoint + "/" + user.getId()).headers(headers);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -190,7 +197,7 @@ public class UserControllerTest {
     @Test
     @DisplayName("Deve retornar 404 Not Found para listar usuario com id inexistente")
     void listarUserByIdFailTest()throws Exception{
-    	RequestBuilder request = get(endpoint + "/" + 0);
+    	RequestBuilder request = get(endpoint + "/" + 0).headers(headers);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());

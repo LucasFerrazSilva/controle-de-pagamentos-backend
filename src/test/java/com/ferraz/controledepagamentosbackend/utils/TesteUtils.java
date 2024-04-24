@@ -55,4 +55,14 @@ public class TesteUtils {
     	userRepository.save(user);
     	return user;
     }
+    
+    public static HttpHeaders login(MockMvc mvc, UserRepository userRepository) throws Exception {
+        Long id = 1L;
+        String email = "teste@teste.com";
+        String password = TesteUtils.DEFAULT_PASSWORD;
+        String name = "Nome Teste";
+        User user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), "ROLE_ADMIN", UserStatus.ATIVO, LocalDateTime.now(), null, null, null);
+        user = userRepository.save(user);
+        return login(mvc, user);
+    }
 }
