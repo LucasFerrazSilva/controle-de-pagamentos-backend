@@ -37,6 +37,14 @@ public class TesteUtils {
         return login(mvc, user);
     }
 
+    public static User createAprovador(UserRepository userRepository) {
+        String email = "aprovador@mail.com";
+        String password = TesteUtils.DEFAULT_PASSWORD;
+        String name = "Nome Aprovador";
+        User user = new User(null, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), "ROLE_ADMIN", ATIVO, LocalDateTime.now(), null, null, null);
+        return userRepository.save(user);
+    }
+
     public static HttpHeaders login(MockMvc mvc, User user) throws Exception {
         String email = user.getEmail();
         String password = DEFAULT_PASSWORD;

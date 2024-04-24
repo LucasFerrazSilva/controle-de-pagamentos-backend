@@ -1,20 +1,27 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
+
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -29,6 +36,8 @@ class HorasExtrasControllerTest {
 
     @Autowired
     private MockMvc mvc;
+    @Autowired
+    private JacksonTester<NovasHorasExtrasDTO> novasHorasExtrasDTOJacksonTester;
 
     @Autowired
     private UserRepository userRepository;
@@ -40,9 +49,13 @@ class HorasExtrasControllerTest {
 
     private final String ENDPOINT = "/horas-extras";
 
+    private User aprovador;
+
     @BeforeAll
+    @Transactional
     void beforeAll() throws Exception {
         this.httpHeaders = TesteUtils.login(mvc, userRepository);
+        this.aprovador = TesteUtils.createAprovador(userRepository);
     }
 
     @BeforeEach
@@ -59,14 +72,19 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via POST o endpoint /horas-extras passando dados válidos")
     void testCreate() throws Exception {
         // Given
-        String dadosValidos = "";
-        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos);
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
         assertThat(response.getContentAsString()).isNotBlank();
     }
 
@@ -75,7 +93,7 @@ class HorasExtrasControllerTest {
     void testCreate_DadosInvalidos() throws Exception {
         // Given
         String dadosInvalidos = "";
-        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosInvalidos);
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosInvalidos).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();

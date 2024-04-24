@@ -1,5 +1,6 @@
 package com.ferraz.controledepagamentosbackend.domain.horasextras;
 
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -58,4 +59,15 @@ public class HorasExtras {
     @JoinColumn(name = "UPDATE_USER_ID")
     private User updateUser;
 
+    public HorasExtras(NovasHorasExtrasDTO dto, User user, User aprovador) {
+        this.dataHoraInicio = dto.dataHoraInicio();
+        this.dataHoraFim = dto.dataHoraFim();
+        this.descricao = dto.descricao();
+        this.aprovador = aprovador;
+
+        this.status = HorasExtrasStatus.SOLICITADO;
+        this.createDatetime = LocalDateTime.now();
+        this.createUser = user;
+        this.user = user;
+    }
 }
