@@ -1,10 +1,19 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
-import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.*;
+import static com.ferraz.controledepagamentosbackend.domain.user.UserStatus.ATIVO;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,14 +26,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import com.ferraz.controledepagamentosbackend.domain.user.User;
+import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 
-import static com.ferraz.controledepagamentosbackend.domain.user.UserStatus.ATIVO;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import jakarta.transaction.Transactional;
 
 @SpringBootTest
 @AutoConfigureMockMvc

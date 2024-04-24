@@ -1,18 +1,23 @@
 package com.ferraz.controledepagamentosbackend.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
-import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
-
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ferraz.controledepagamentosbackend.domain.user.User;
+import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
+import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
+import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
 
 public class TesteUtils {
 
@@ -35,4 +40,29 @@ public class TesteUtils {
         return httpHeaders;
     }
 
+    
+    public static User createUser(UserRepository userRepository) {
+    	User user = new User();
+    	user.setNome("Luis");
+    	user.setEmail("test@test.com.br");
+    	user.setSenha(new BCryptPasswordEncoder().encode("1234"));
+    	user.setSalario(new BigDecimal("100.0"));
+    	user.setPerfil("ROLE_ADMIN");
+		user.setStatus(UserStatus.ATIVO);
+		user.setCreateDateTime(LocalDateTime.now());
+		user.setUpdateDatetime(null);
+		user.setUpdateUser(null);
+    	userRepository.save(user);
+    	return user;
+    }
+    
+    public static HttpHeaders login(MockMvc mvc, UserRepository userRepository) throws Exception {
+        Long id = 1L;
+        String email = "teste@teste.com";
+        String password = TesteUtils.DEFAULT_PASSWORD;
+        String name = "Nome Teste";
+        User user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), "ROLE_ADMIN", UserStatus.ATIVO, LocalDateTime.now(), null, null, null);
+        user = userRepository.save(user);
+        return login(mvc, user);
+    }
 }

@@ -1,14 +1,14 @@
 package com.ferraz.controledepagamentosbackend.domain.user;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 class UserTest {
 
@@ -42,7 +42,7 @@ class UserTest {
         assertThat(user.getSalario()).isEqualTo(salario);
         assertThat(user.getPerfil()).isEqualTo(perfil);
         assertThat(user.getStatus()).isEqualTo(status);
-        assertThat(user.getCreateDatetime()).isEqualTo(createDatetime);
+        assertThat(user.getCreateDateTime()).isEqualTo(createDatetime);
         assertThat(user.getCreateUser().getId()).isEqualTo(createUser.getId());
         assertThat(user.getUpdateDatetime()).isEqualTo(updateDatetime);
         assertThat(user.getUpdateUser().getId()).isEqualTo(updateUser.getId());
