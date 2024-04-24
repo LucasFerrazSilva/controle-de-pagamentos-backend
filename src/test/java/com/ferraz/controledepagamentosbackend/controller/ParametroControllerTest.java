@@ -40,30 +40,22 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ParametroControllerTest {
+    int contador;
     @Autowired
     private MockMvc mvc;
     @Autowired
     private JacksonTester<NovoParametroDTO> novoParametroDTOJackson;
-
     @Autowired
     private JacksonTester<ParametroDTO> parameterDTOJackson;
-
     @Autowired
     private JacksonTester<UpdateParametroDTO> updateParameterDTOJackson;
-
     @Autowired
     private ParametroRepository parametroRepository;
-
     @Autowired
     private UserRepository userRepository;
-
     private User user;
-
     private HttpHeaders httpHeaders;
-
     private Parametro parametro1;
-
-    int contador;
 
     @AfterAll
     @Transactional
@@ -88,7 +80,7 @@ class ParametroControllerTest {
 
     @BeforeEach
     @Transactional
-    void beforeEach(){
+    void beforeEach() {
 
         NovoParametroDTO novoParametroDTO1 = new NovoParametroDTO("parametro_" + contador, "valor_1");
         parametro1 = parametroRepository.save(new Parametro(novoParametroDTO1, this.user));
@@ -102,10 +94,11 @@ class ParametroControllerTest {
 
     @AfterEach
     @Transactional
-    void afterEach(){
+    void afterEach() {
         contador++;
         parametroRepository.deleteAll();
     }
+
     @Test
     @DisplayName("Deve criar um parametro")
     void testCriarParametros() throws Exception {
@@ -153,7 +146,8 @@ class ParametroControllerTest {
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
-        List<ParametroDTO> parametroList = objectMapper.readValue(response.getContentAsString(), new TypeReference<List<ParametroDTO>>(){});
+        List<ParametroDTO> parametroList = objectMapper.readValue(response.getContentAsString(), new TypeReference<List<ParametroDTO>>() {
+        });
         assertThat(parametroList).hasSize(3);
         assertThat(parametroList.get(0).nome()).isEqualTo("parametro_" + contador);
         assertThat(parametroList.get(1).valor()).isEqualTo("valor_2");

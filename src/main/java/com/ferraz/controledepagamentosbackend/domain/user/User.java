@@ -52,13 +52,15 @@ public class User implements UserDetails {
     @Column(name="CREATE_DATETIME")
     private LocalDateTime createDatetime;
 
-    @Column(name="CREATE_USER_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="CREATE_USER_ID")
     private User createUser;
 
     @Column(name="UPDATE_DATETIME")
     private LocalDateTime updateDatetime;
 
-    @Column(name="UPDATE_USER_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="UPDATE_USER_ID")
     private User updateUser;
 
     @Override
