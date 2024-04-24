@@ -17,8 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserService;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosListagemUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
 
 import jakarta.validation.Valid;
@@ -34,7 +33,7 @@ public class UserController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<UserDTO> criar(@RequestBody @Valid DadosUserDTO dados, UriComponentsBuilder uriComponentsBuilder) {
+	public ResponseEntity<UserDTO> criar(@RequestBody @Valid DadosCreateUserDTO dados, UriComponentsBuilder uriComponentsBuilder) {
 		User user = userService.criarUsuario(dados);
 		UserDTO userDTO = new UserDTO(user);
 		URI uri = uriComponentsBuilder.path("/user/{id}").buildAndExpand(user.getId()).toUri();
@@ -42,7 +41,7 @@ public class UserController {
 	}
 	
 	@GetMapping
-	public ResponseEntity<List<DadosListagemUserDTO>> listar() {
+	public ResponseEntity<List<UserDTO>> listar() {
 		return ResponseEntity.ok().body(userService.listarUsuarios());
 	}
 	
@@ -60,7 +59,9 @@ public class UserController {
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<DadosListagemUserDTO> listarUserPorId(@PathVariable Long id){
-		return userService.listarUserPorId(id);
+	public ResponseEntity<UserDTO> listarUserPorId(@PathVariable Long id){
+		User user = userService.listarUserPorId(id);
+		UserDTO dto = new UserDTO(user);
+		return ResponseEntity.ok().body(dto);
 	}
 }

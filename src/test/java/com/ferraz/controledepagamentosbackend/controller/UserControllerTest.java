@@ -33,7 +33,7 @@ import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
 import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 
 import jakarta.transaction.Transactional;
@@ -75,7 +75,7 @@ class UserControllerTest {
     	String senha = "SenhaTeste";
     	BigDecimal salario = new BigDecimal("123.0");
     	String perfil = "ROLE_ADMIN";
-    	DadosUserDTO dadosUserDTO = new DadosUserDTO(nome, email, senha, salario, perfil);
+    	DadosCreateUserDTO dadosUserDTO = new DadosCreateUserDTO(nome, email, senha, salario, perfil);
     	String jsonString = objectMapper.writeValueAsString(dadosUserDTO);
     	
     	RequestBuilder request = post(endpoint).contentType(APPLICATION_JSON).content(jsonString).headers(headers);
@@ -98,7 +98,7 @@ class UserControllerTest {
     	String perfil = "ROLE_ADMIN";
     	
     	//Converte dados para uma DTO no corpo da requisição
-    	DadosUserDTO dadosUserDTO = new DadosUserDTO(nome, email, senha, salario, perfil);
+    	DadosCreateUserDTO dadosUserDTO = new DadosCreateUserDTO(nome, email, senha, salario, perfil);
     	String jsonString = mapper.writeValueAsString(dadosUserDTO);
     	
     	//Requisicao e resposta
@@ -144,7 +144,7 @@ class UserControllerTest {
     	ObjectMapper mapper = new ObjectMapper();
     	String nome = "LuisTesteAlterado";
     	
-    	DadosAtualizacaoUserDTO dto = new DadosAtualizacaoUserDTO(nome, null, null, null, null);
+    	DadosAtualizacaoUserDTO dto = new DadosAtualizacaoUserDTO(nome, null, null, null);
     	String jsonDto = mapper.writeValueAsString(dto);
     	
     	RequestBuilder request = put(endpoint + "/" + user.getId()).contentType(APPLICATION_JSON)
@@ -174,7 +174,7 @@ class UserControllerTest {
     	ObjectMapper mapper = new ObjectMapper();
     	String email = user.getEmail();
     	
-    	DadosAtualizacaoUserDTO dto = new DadosAtualizacaoUserDTO(null, email, null, null, null);
+    	DadosAtualizacaoUserDTO dto = new DadosAtualizacaoUserDTO(null, email, null, null);
     	String jsonDto = mapper.writeValueAsString(dto);
     	RequestBuilder request = put(endpoint + "/" + user2.getId()).contentType(APPLICATION_JSON)
     			.content(jsonDto).headers(headers);

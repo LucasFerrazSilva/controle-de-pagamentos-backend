@@ -2,13 +2,13 @@ package com.ferraz.controledepagamentosbackend.domain.user;
 
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosListagemUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.CreateUserValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.DeleteUserValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.UpdateUserValidator;
@@ -35,7 +35,7 @@ public class UserService {
 	}
 
 	@Transactional
-	public User criarUsuario(DadosUserDTO dados) {
+	public User criarUsuario(DadosCreateUserDTO dados) {
 		createUserValidators.forEach(validator -> validator.validator(dados));
 		var user = new User(dados);
 		user.setSenha(encoder.encode(dados.senha()));
@@ -44,8 +44,8 @@ public class UserService {
 		return user;
 	}
 
-	public List<DadosListagemUserDTO> listarUsuarios() {
-		return repository.findAll().stream().map(DadosListagemUserDTO::new).toList();
+	public List<UserDTO> listarUsuarios() {
+		return repository.findAll().stream().map(UserDTO::new).toList();
 
 	}
 
@@ -64,9 +64,9 @@ public class UserService {
 		return user;
 	}
 
-	public ResponseEntity<DadosListagemUserDTO> listarUserPorId(Long id) {
-		DadosListagemUserDTO dto = new DadosListagemUserDTO(repository.findById(id).orElseThrow());
-		return ResponseEntity.ok(dto);
+	public User listarUserPorId(Long id) {
+		User user = repository.findById(id).orElseThrow();
+		return user;
 	}
 
 	

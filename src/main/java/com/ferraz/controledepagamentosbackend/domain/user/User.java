@@ -11,12 +11,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -63,17 +64,18 @@ public class User implements UserDetails {
     @Column(name="STATUS")
     private UserStatus status;
 
+    
     @Column(name="CREATE_DATETIME")
     private LocalDateTime createDateTime;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="CREATE_USER_ID")
     private User createUser;
 
     @Column(name="UPDATE_DATETIME")
     private LocalDateTime updateDatetime;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="UPDATE_USER_ID")
     private User updateUser;
 
@@ -112,7 +114,7 @@ public class User implements UserDetails {
         return this.status == UserStatus.ATIVO;
     }
 
-	public User(DadosUserDTO dados) {
+	public User(DadosCreateUserDTO dados) {
 		this.nome = dados.nome();
 		this.email = dados.email();
 		this.senha = dados.senha();
@@ -129,9 +131,6 @@ public class User implements UserDetails {
 		}
 		if(dados.email() != null) {
 			this.email = dados.email();
-		}
-		if(dados.senha() != null) {
-			this.senha = dados.senha();
 		}
 		if(dados.salario() != null) {
 			this.salario = dados.salario();

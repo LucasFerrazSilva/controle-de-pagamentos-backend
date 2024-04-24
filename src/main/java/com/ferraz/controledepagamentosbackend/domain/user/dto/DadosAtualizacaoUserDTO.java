@@ -10,8 +10,6 @@ public record DadosAtualizacaoUserDTO(
 
 		@Email String email,
 
-		String senha,
-
 		BigDecimal salario,
 
 		String perfil) {
