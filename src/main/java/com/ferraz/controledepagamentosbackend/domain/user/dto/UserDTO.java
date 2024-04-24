@@ -14,8 +14,8 @@ public record UserDTO(
 
         UserStatus status
 ) {
-
     public UserDTO(User user) {
         this(user.getId(), user.getNome(), user.getEmail(), user.getPerfil(), user.getStatus());
     }
+
 }

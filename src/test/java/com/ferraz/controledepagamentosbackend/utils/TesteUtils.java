@@ -3,15 +3,14 @@ package com.ferraz.controledepagamentosbackend.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
-
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -60,4 +59,19 @@ public class TesteUtils {
         return httpHeaders;
     }
 
+    
+    public static User createUser(UserRepository userRepository) {
+    	User user = new User();
+    	user.setNome("Luis");
+    	user.setEmail("test@test.com.br");
+    	user.setSenha(new BCryptPasswordEncoder().encode("1234"));
+    	user.setSalario(new BigDecimal("100.0"));
+    	user.setPerfil("ROLE_ADMIN");
+		user.setStatus(UserStatus.ATIVO);
+		user.setCreateDateTime(LocalDateTime.now());
+		user.setUpdateDatetime(null);
+		user.setUpdateUser(null);
+    	userRepository.save(user);
+    	return user;
+    }
 }
