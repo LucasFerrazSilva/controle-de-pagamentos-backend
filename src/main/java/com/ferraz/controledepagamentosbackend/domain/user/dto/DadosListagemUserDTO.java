@@ -1,4 +1,4 @@
-package com.ferraz.controledepagamentosbackend.domain.user.DTO;
+package com.ferraz.controledepagamentosbackend.domain.user.dto;
 
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;

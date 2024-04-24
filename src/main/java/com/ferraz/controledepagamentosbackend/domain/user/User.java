@@ -10,8 +10,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosAtualizacaoUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosUserDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

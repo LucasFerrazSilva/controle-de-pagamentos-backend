@@ -1,6 +1,6 @@
 package com.ferraz.controledepagamentosbackend.domain.user.validations;
 
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosUserDTO;
 
 
 public interface CreateUserValidator  {

@@ -16,10 +16,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserService;
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosAtualizacaoUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosListagemUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.UserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosListagemUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
 
 import jakarta.validation.Valid;
 

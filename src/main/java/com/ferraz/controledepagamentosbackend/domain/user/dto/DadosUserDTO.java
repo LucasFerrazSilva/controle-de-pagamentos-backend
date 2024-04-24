@@ -1,4 +1,4 @@
-package com.ferraz.controledepagamentosbackend.domain.user.DTO;
+package com.ferraz.controledepagamentosbackend.domain.user.dto;
 
 import java.math.BigDecimal;
 

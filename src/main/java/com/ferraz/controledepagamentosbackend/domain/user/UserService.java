@@ -6,9 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosAtualizacaoUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosListagemUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosListagemUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.CreateUserValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.DeleteUserValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.UpdateUserValidator;

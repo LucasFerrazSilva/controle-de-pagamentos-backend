@@ -33,8 +33,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosAtualizacaoUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.DTO.DadosUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosUserDTO;
 import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 
 import jakarta.transaction.Transactional;
