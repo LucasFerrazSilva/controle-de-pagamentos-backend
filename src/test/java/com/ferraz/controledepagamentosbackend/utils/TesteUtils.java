@@ -1,17 +1,22 @@
 package com.ferraz.controledepagamentosbackend.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
+import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -74,4 +79,22 @@ public class TesteUtils {
     	userRepository.save(user);
     	return user;
     }
+
+    public static HorasExtrasDTO createHorasExtras(User aprovador, JacksonTester<NovasHorasExtrasDTO> novasHorasExtrasDTOJacksonTester,
+                                                JacksonTester<HorasExtrasDTO> horasExtrasDTOJacksonTester,
+                                                MockMvc mvc, HttpHeaders httpHeaders) throws Exception {
+
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post("/horas-extras").contentType(APPLICATION_JSON).content(dadosValidos).headers(httpHeaders);
+
+        // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+        return horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
+    }
+
 }

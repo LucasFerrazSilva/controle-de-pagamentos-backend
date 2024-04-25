@@ -66,6 +66,8 @@ class ParametroControllerTest {
     @BeforeAll
     @Transactional
     void beforeAll() throws Exception {
+        userRepository.deleteAll();
+
         contador = 0;
         Long id = 1L;
         String email = "teste@teste.com";

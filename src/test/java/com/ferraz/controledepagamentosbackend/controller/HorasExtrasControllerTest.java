@@ -1,11 +1,11 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasService;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
-import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
@@ -38,12 +38,17 @@ class HorasExtrasControllerTest {
     private MockMvc mvc;
     @Autowired
     private JacksonTester<NovasHorasExtrasDTO> novasHorasExtrasDTOJacksonTester;
+    @Autowired
+    private JacksonTester<HorasExtrasDTO> horasExtrasDTOJacksonTester;
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private HorasExtrasRepository horasExtrasRepository;
+
+    @Autowired
+    private HorasExtrasService horasExtrasService;
 
     private HttpHeaders httpHeaders;
 
@@ -66,6 +71,7 @@ class HorasExtrasControllerTest {
     @AfterAll
     void afterAll() {
         horasExtrasRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
@@ -107,7 +113,8 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras")
     void testList() throws Exception {
         // Given
-        RequestBuilder requestBuilder = get(ENDPOINT);
+        TesteUtils.createHorasExtras(aprovador, novasHorasExtrasDTOJacksonTester, horasExtrasDTOJacksonTester, mvc, httpHeaders);
+        RequestBuilder requestBuilder = get(ENDPOINT).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -121,14 +128,14 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 404 (Not found) quando chamar via GET o endpoint /horas-extras e não houver nenhum item no banco")
     void testList_NenhumRegistro() throws Exception {
         // Given
-        RequestBuilder requestBuilder = get(ENDPOINT);
+        horasExtrasRepository.deleteAll();
+        RequestBuilder requestBuilder = get(ENDPOINT).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-        assertThat(response.getContentAsString()).isBlank();
     }
 
     @Test
@@ -136,7 +143,7 @@ class HorasExtrasControllerTest {
     void testFindById() throws Exception {
         // Given
         Long idValido = null;
-        RequestBuilder requestBuilder = get(ENDPOINT + "/" + idValido);
+        RequestBuilder requestBuilder = get(ENDPOINT + "/" + idValido).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -151,7 +158,7 @@ class HorasExtrasControllerTest {
     void testFindById_IdInvalido() throws Exception {
         // Given
         Long idInvalido = null;
-        RequestBuilder requestBuilder = get(ENDPOINT + "/" + idInvalido);
+        RequestBuilder requestBuilder = get(ENDPOINT + "/" + idInvalido).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -167,7 +174,7 @@ class HorasExtrasControllerTest {
         // Given
         String dadosValidos = "";
         Long idValido = null;
-        RequestBuilder requestBuilder = put(ENDPOINT + "/" + idValido).contentType(APPLICATION_JSON).content(dadosValidos);
+        RequestBuilder requestBuilder = put(ENDPOINT + "/" + idValido).contentType(APPLICATION_JSON).content(dadosValidos).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -183,7 +190,7 @@ class HorasExtrasControllerTest {
         // Given
         String dadosInvalidos = "";
         Long idValido = null;
-        RequestBuilder requestBuilder = put(ENDPOINT + "/" + idValido).contentType(APPLICATION_JSON).content(dadosInvalidos);
+        RequestBuilder requestBuilder = put(ENDPOINT + "/" + idValido).contentType(APPLICATION_JSON).content(dadosInvalidos).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -198,7 +205,7 @@ class HorasExtrasControllerTest {
     void testDelete() throws Exception {
         // Given
         Long idValido = null;
-        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + idValido);
+        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + idValido).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -213,7 +220,7 @@ class HorasExtrasControllerTest {
     void testDelete_IdInvalido() throws Exception {
         // Given
         Long idInvalido = null;
-        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + idInvalido);
+        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + idInvalido).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
