@@ -42,14 +42,14 @@ public class HorasExtrasService {
 
         if (dataInicio != null) {
             LocalDateTime dataHoraInicio = dataInicio.atTime(LocalTime.MIN);
-            List<HorasExtras> horasExtras1 = page.stream().filter(horasExtras -> dataHoraInicio.isBefore(horasExtras.getDataHoraInicio())).toList();
-            page = new PageImpl<>(horasExtras1, pageable, horasExtras1.size());
+            List<HorasExtras> list = page.stream().filter(horasExtras -> dataHoraInicio.isBefore(horasExtras.getDataHoraInicio())).toList();
+            page = new PageImpl<>(list, pageable, list.size());
         }
 
         if (dataFim != null) {
             LocalDateTime dataHoraFim = dataFim.atTime(LocalTime.MAX);
-            List<HorasExtras> horasExtras1 = page.stream().filter(horasExtras -> dataHoraFim.isAfter(horasExtras.getDataHoraFim())).toList();
-            page = new PageImpl<>(horasExtras1, pageable, horasExtras1.size());
+            List<HorasExtras> list = page.stream().filter(horasExtras -> dataHoraFim.isAfter(horasExtras.getDataHoraFim())).toList();
+            page = new PageImpl<>(list, pageable, list.size());
         }
 
         return page;

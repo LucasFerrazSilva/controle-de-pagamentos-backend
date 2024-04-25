@@ -43,12 +43,8 @@ public class HorasExtrasController {
 
         Page<HorasExtras> page = service.list(pageable, idUsuario, idAprovador, dataInicio, dataFim, descricao, status);
 
-        if (page.getTotalElements() > 0) {
-            Page<HorasExtrasDTO> pageDTO = page.map(HorasExtrasDTO::new);
-            return ResponseEntity.ok(pageDTO);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        Page<HorasExtrasDTO> pageDTO = page.map(HorasExtrasDTO::new);
+        return ResponseEntity.ok(pageDTO);
     }
 
 }

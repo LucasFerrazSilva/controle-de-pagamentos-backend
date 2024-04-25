@@ -1,5 +1,7 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasService;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
@@ -14,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -22,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -40,6 +44,8 @@ class HorasExtrasControllerTest {
     private JacksonTester<NovasHorasExtrasDTO> novasHorasExtrasDTOJacksonTester;
     @Autowired
     private JacksonTester<HorasExtrasDTO> horasExtrasDTOJacksonTester;
+    @Autowired
+    private JacksonTester<Page<HorasExtrasDTO>> pageHorasExtrasDTOJacksonTester;
 
     @Autowired
     private UserRepository userRepository;
@@ -121,21 +127,8 @@ class HorasExtrasControllerTest {
 
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.getContentAsString()).isNotBlank();
-    }
-
-    @Test
-    @DisplayName("Deve retornar 404 (Not found) quando chamar via GET o endpoint /horas-extras e não houver nenhum item no banco")
-    void testList_NenhumRegistro() throws Exception {
-        // Given
-        horasExtrasRepository.deleteAll();
-        RequestBuilder requestBuilder = get(ENDPOINT).headers(httpHeaders);
-
-        // When
-        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
-
-        // Then
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        HashMap<String,Object> page = new ObjectMapper().readValue(response.getContentAsString(), new TypeReference<>() {});
+        assertThat(page).containsEntry("numberOfElements", 1);
     }
 
     @Test
