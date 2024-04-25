@@ -17,6 +17,9 @@ import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -146,8 +149,14 @@ class ParametroControllerTest {
         // Given
         ObjectMapper objectMapper = new ObjectMapper();
 
+        Sort sort = Sort.by("id").ascending();
+        Pageable pageable = PageRequest.of(0, 10, sort);
         String endpoint = "/parametros";
-        RequestBuilder requestBuilder = get(endpoint).contentType(APPLICATION_JSON).headers(httpHeaders);
+        RequestBuilder requestBuilder = get(endpoint)
+                .contentType(APPLICATION_JSON)
+                .headers(httpHeaders)
+                .param("page", String.valueOf(pageable.getPageNumber()))
+                .param("size", String.valueOf(pageable.getPageSize()));
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();

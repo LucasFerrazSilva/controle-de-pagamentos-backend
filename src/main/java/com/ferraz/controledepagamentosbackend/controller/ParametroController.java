@@ -6,6 +6,9 @@ import com.ferraz.controledepagamentosbackend.domain.parameters.dto.NovoParametr
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.ParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,8 +44,10 @@ public class ParametroController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ParametroDTO>> getAll(){
-        List<Parametro> parametros = parametroService.findAll();
+    public ResponseEntity<List<ParametroDTO>> getAll(
+            @PageableDefault Pageable pageable
+            ){
+        Page<Parametro> parametros = parametroService.findAll(pageable);
         List<ParametroDTO> parametrosDTO = parametros.stream().map(ParametroDTO::new).toList();
         return ResponseEntity.status(HttpStatus.OK).body(parametrosDTO);
     }
