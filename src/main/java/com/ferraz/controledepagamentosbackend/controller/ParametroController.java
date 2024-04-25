@@ -6,6 +6,9 @@ import com.ferraz.controledepagamentosbackend.domain.parameters.dto.NovoParametr
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.ParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +29,7 @@ public class ParametroController {
 
 
     @PostMapping
-    public ResponseEntity<Object> create(@RequestBody @Valid NovoParametroDTO novoParametroDTO){
+    public ResponseEntity<Object> create(@RequestBody @Valid NovoParametroDTO novoParametroDTO) {
         Parametro novoParametro = parametroService.save(novoParametroDTO);
 
         URI location = ServletUriComponentsBuilder
@@ -41,28 +44,30 @@ public class ParametroController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ParametroDTO>> getAll(){
-        List<Parametro> parametros = parametroService.findAll();
+    public ResponseEntity<List<ParametroDTO>> getAll(
+            @PageableDefault Pageable pageable
+    ) {
+        Page<Parametro> parametros = parametroService.findAll(pageable);
         List<ParametroDTO> parametrosDTO = parametros.stream().map(ParametroDTO::new).toList();
         return ResponseEntity.status(HttpStatus.OK).body(parametrosDTO);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ParametroDTO> getOne(@PathVariable(value = "id") Long id){
+    public ResponseEntity<ParametroDTO> getOne(@PathVariable(value = "id") Long id) {
         Parametro parametro = parametroService.findOne(id);
         ParametroDTO parametroDTO = new ParametroDTO(parametro);
         return ResponseEntity.status(HttpStatus.OK).body(parametroDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable(value = "id") Long id, @RequestBody @Valid UpdateParametroDTO updateParametroDTO){
+    public ResponseEntity<Object> update(@PathVariable(value = "id") Long id, @RequestBody @Valid UpdateParametroDTO updateParametroDTO) {
         Parametro parametro = parametroService.update(id, updateParametroDTO);
         ParametroDTO updatedParametroDTO = new ParametroDTO(parametro);
         return ResponseEntity.status(HttpStatus.OK).body(updatedParametroDTO);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable(value = "id") Long id){
+    public ResponseEntity<Object> delete(@PathVariable(value = "id") Long id) {
         parametroService.deactivate(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

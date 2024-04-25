@@ -17,6 +17,9 @@ import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -63,8 +66,6 @@ class ParametroControllerTest {
 
     private Parametro parametro1;
 
-    int contador;
-
     @AfterAll
     @Transactional
     void afterAll() {
@@ -74,7 +75,6 @@ class ParametroControllerTest {
     @BeforeAll
     @Transactional
     void beforeAll() throws Exception {
-        contador = 0;
         Long id = 1L;
         String email = "teste@teste.com";
         String password = TesteUtils.DEFAULT_PASSWORD;
@@ -90,7 +90,7 @@ class ParametroControllerTest {
     @Transactional
     void beforeEach(){
 
-        NovoParametroDTO novoParametroDTO1 = new NovoParametroDTO("parametro_" + contador, "valor_1");
+        NovoParametroDTO novoParametroDTO1 = new NovoParametroDTO("parametro_1", "valor_1");
         parametro1 = parametroRepository.save(new Parametro(novoParametroDTO1, this.user));
 
         NovoParametroDTO novoParametroDTO2 = new NovoParametroDTO("parametro_2", "valor_2");
@@ -103,7 +103,6 @@ class ParametroControllerTest {
     @AfterEach
     @Transactional
     void afterEach(){
-        contador++;
         parametroRepository.deleteAll();
     }
     @Test
@@ -143,11 +142,17 @@ class ParametroControllerTest {
     @Test
     @DisplayName("Deve conseguir uma lista de parametros")
     void getAllParameters() throws Exception {
+
+
         // Given
+        String sortOrder = "asc";
+        String sortBy = "id";
+        Sort sort = Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(0, 10, sort);
         ObjectMapper objectMapper = new ObjectMapper();
 
         String endpoint = "/parametros";
-        RequestBuilder requestBuilder = get(endpoint).contentType(APPLICATION_JSON).headers(httpHeaders);
+        RequestBuilder requestBuilder = get(endpoint).contentType(APPLICATION_JSON).headers(httpHeaders).;
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -155,7 +160,7 @@ class ParametroControllerTest {
         // Then
         List<ParametroDTO> parametroList = objectMapper.readValue(response.getContentAsString(), new TypeReference<List<ParametroDTO>>(){});
         assertThat(parametroList).hasSize(3);
-        assertThat(parametroList.get(0).nome()).isEqualTo("parametro_" + contador);
+        assertThat(parametroList.get(0).nome()).isEqualTo(parametro1.getNome());
         assertThat(parametroList.get(1).valor()).isEqualTo("valor_2");
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
     }
