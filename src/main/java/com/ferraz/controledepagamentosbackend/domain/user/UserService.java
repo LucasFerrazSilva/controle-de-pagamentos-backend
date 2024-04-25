@@ -2,13 +2,13 @@ package com.ferraz.controledepagamentosbackend.domain.user;
 
 import java.util.List;
 
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.CreateUserValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.DeleteUserValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.UpdateUserValidator;
@@ -44,8 +44,8 @@ public class UserService {
 		return user;
 	}
 
-	public List<UserDTO> listarUsuarios() {
-		return repository.findAll().stream().map(UserDTO::new).toList();
+	public Page<User> listarUsuarios(Pageable pageable, String nome, String email, String perfil, UserStatus status) {
+		return repository.findByFiltros(pageable, nome, email, perfil, status);
 
 	}
 
@@ -60,7 +60,6 @@ public class UserService {
 		updateUserValidators.forEach(validator -> validator.validate(dados, id));
 		User user = repository.getReferenceById(id);
 		user.atualizar(dados);
-		
 		return user;
 	}
 
@@ -68,6 +67,5 @@ public class UserService {
 		User user = repository.findById(id).orElseThrow();
 		return user;
 	}
-
 	
 }
