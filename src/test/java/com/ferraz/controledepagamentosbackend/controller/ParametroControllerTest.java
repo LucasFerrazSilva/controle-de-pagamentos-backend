@@ -152,7 +152,7 @@ class ParametroControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
 
         String endpoint = "/parametros";
-        RequestBuilder requestBuilder = get(endpoint).contentType(APPLICATION_JSON).headers(httpHeaders).;
+        RequestBuilder requestBuilder = get(endpoint).contentType(APPLICATION_JSON).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
