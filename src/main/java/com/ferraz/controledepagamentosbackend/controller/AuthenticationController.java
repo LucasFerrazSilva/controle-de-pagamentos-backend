@@ -1,10 +1,5 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.infra.security.TokenService;
-import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
-import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,6 +7,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.ferraz.controledepagamentosbackend.domain.user.User;
+import com.ferraz.controledepagamentosbackend.infra.security.TokenService;
+import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
+import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/login")

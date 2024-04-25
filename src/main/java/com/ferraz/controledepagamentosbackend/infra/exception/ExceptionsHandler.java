@@ -14,6 +14,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.ferraz.controledepagamentosbackend.domain.user.exceptions.EmailAlreadyInUseException;
+import com.ferraz.controledepagamentosbackend.domain.user.exceptions.UserNotFoundException;
+
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -24,6 +27,17 @@ public class ExceptionsHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ExceptionMessageDTO> handleBadCredentials() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON).body(new ExceptionMessageDTO("Credenciais inválidas"));
+    }
+    
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ExceptionMessageDTO> handleUserNotFound(UserNotFoundException exception){
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(new ExceptionMessageDTO(exception.getMessage()));
+    	
+    }
+    
+    @ExceptionHandler(EmailAlreadyInUseException.class)
+    public ResponseEntity<ExceptionMessageDTO> handleEmailAlreadyInUse(EmailAlreadyInUseException exception){
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(new ExceptionMessageDTO(exception.getMessage()));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
@@ -71,7 +85,7 @@ public class ExceptionsHandler {
 
         return ResponseEntity.badRequest().body(errorsDTO);
     }
-
+    
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ExceptionMessageDTO> tratarErro400(HttpMessageNotReadableException ex) {
         return ResponseEntity.badRequest().body(new ExceptionMessageDTO(ex.getMessage()));
