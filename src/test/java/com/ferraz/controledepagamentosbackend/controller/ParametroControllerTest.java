@@ -62,9 +62,6 @@ class ParametroControllerTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     private User user;
 
     private HttpHeaders httpHeaders;
@@ -152,6 +149,7 @@ class ParametroControllerTest {
     @DisplayName("Deve conseguir uma lista de parametros")
     void getAllParameters() throws Exception {
         // Given
+        ObjectMapper objectMapper = new ObjectMapper();
         String endpoint = "/parametros";
         RequestBuilder requestBuilder = get(endpoint)
                 .contentType(APPLICATION_JSON)
