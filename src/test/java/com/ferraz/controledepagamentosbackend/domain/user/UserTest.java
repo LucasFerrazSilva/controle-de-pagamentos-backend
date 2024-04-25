@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -104,4 +105,25 @@ class UserTest {
         return new User(id, nome, email, senha, salario, perfil, status, createDatetime, createUser, updateDatetime, updateUser);
     }
 
+    @Test
+    void atualizar() {
+        // Given
+        User user = UserTest.createUser();
+        String novoNome = "teste_nome_atualizado";
+        String novoEmail = "Teste_email_atualizado@mail.com";
+        BigDecimal novoSalario = new BigDecimal("9999");
+        String perfil = "ROLE_ADMIN";
+        DadosAtualizacaoUserDTO dados = new DadosAtualizacaoUserDTO(novoNome, novoEmail, novoSalario, perfil);
+
+        // When
+        user.atualizar(dados);
+
+        // Then
+        assertThat(user.getNome()).isEqualTo(novoNome);
+        assertThat(user.getEmail()).isEqualTo(novoEmail);
+        assertThat(user.getSalario()).isEqualTo(novoSalario);
+        assertThat(user.getPerfil()).isEqualTo(perfil);
+
+
+    }
 }
