@@ -44,11 +44,11 @@ public class ParametroController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ParametroDTO>> getAll(
+    public ResponseEntity<Page<ParametroDTO>> getAll(
             @PageableDefault Pageable pageable
             ){
         Page<Parametro> parametros = parametroService.findAll(pageable);
-        List<ParametroDTO> parametrosDTO = parametros.stream().map(ParametroDTO::new).toList();
+        Page<ParametroDTO> parametrosDTO = parametros.map(ParametroDTO::new);
         return ResponseEntity.status(HttpStatus.OK).body(parametrosDTO);
     }
 

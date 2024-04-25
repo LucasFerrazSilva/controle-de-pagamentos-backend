@@ -1,6 +1,6 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
 import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
@@ -17,9 +17,7 @@ import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -30,6 +28,7 @@ import org.springframework.test.web.servlet.RequestBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.ferraz.controledepagamentosbackend.domain.user.UserStatus.ATIVO;
@@ -49,6 +48,9 @@ class ParametroControllerTest {
     private JacksonTester<NovoParametroDTO> novoParametroDTOJackson;
 
     @Autowired
+    private JacksonTester<Page<ParametroDTO>> pageJackson;
+
+    @Autowired
     private JacksonTester<ParametroDTO> parameterDTOJackson;
 
     @Autowired
@@ -59,6 +61,9 @@ class ParametroControllerTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private User user;
 
@@ -147,25 +152,29 @@ class ParametroControllerTest {
     @DisplayName("Deve conseguir uma lista de parametros")
     void getAllParameters() throws Exception {
         // Given
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        Sort sort = Sort.by("id").ascending();
-        Pageable pageable = PageRequest.of(0, 10, sort);
         String endpoint = "/parametros";
         RequestBuilder requestBuilder = get(endpoint)
                 .contentType(APPLICATION_JSON)
-                .headers(httpHeaders)
-                .param("page", String.valueOf(pageable.getPageNumber()))
-                .param("size", String.valueOf(pageable.getPageSize()));
+                .headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
-        List<ParametroDTO> parametroList = objectMapper.readValue(response.getContentAsString(), new TypeReference<List<ParametroDTO>>(){});
-        assertThat(parametroList).hasSize(3);
-        assertThat(parametroList.get(0).nome()).isEqualTo("parametro_" + contador);
-        assertThat(parametroList.get(1).valor()).isEqualTo("valor_2");
+        String content = response.getContentAsString();
+        List<ParametroDTO> parametrosList = new ArrayList<>();
+        JsonNode rootNode = objectMapper.readTree(content);
+        JsonNode contentNode = rootNode.get("content");
+        if (contentNode.isArray()) {
+            for (JsonNode node : contentNode) {
+                ParametroDTO parametroDTO = objectMapper.treeToValue(node, ParametroDTO.class);
+                parametrosList.add(parametroDTO);
+            }
+        }
+
+        assertThat(parametrosList).hasSize(3);
+        assertThat(parametrosList.get(0).nome()).isEqualTo("parametro_" + contador);
+        assertThat(parametrosList.get(1).valor()).isEqualTo("valor_2");
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
