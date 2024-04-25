@@ -2,6 +2,7 @@ package com.ferraz.controledepagamentosbackend.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasService;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
@@ -119,7 +120,7 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras")
     void testList() throws Exception {
         // Given
-        TesteUtils.createHorasExtras(aprovador, novasHorasExtrasDTOJacksonTester, horasExtrasDTOJacksonTester, mvc, httpHeaders);
+        TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
         RequestBuilder requestBuilder = get(ENDPOINT).headers(httpHeaders);
 
         // When
@@ -135,30 +136,32 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras passando um id valido")
     void testFindById() throws Exception {
         // Given
-        Long idValido = null;
-        RequestBuilder requestBuilder = get(ENDPOINT + "/" + idValido).headers(httpHeaders);
+        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        RequestBuilder requestBuilder = get(ENDPOINT + "/" + horasExtras.getId()).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.getContentAsString()).isNotBlank();
+
+        HorasExtrasDTO responseDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
+        assertThat(responseDTO.id()).isEqualTo(horasExtras.getId());
+        assertThat(responseDTO.user().id()).isEqualTo(horasExtras.getUser().getId());
     }
 
     @Test
     @DisplayName("Deve retornar 404 (Not found) quando chamar via GET o endpoint /horas-extras passando um id invalido")
     void testFindById_IdInvalido() throws Exception {
         // Given
-        Long idInvalido = null;
-        RequestBuilder requestBuilder = get(ENDPOINT + "/" + idInvalido).headers(httpHeaders);
+        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        RequestBuilder requestBuilder = get(ENDPOINT + "/" + 99999).headers(httpHeaders);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.getContentAsString()).isNotBlank();
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test

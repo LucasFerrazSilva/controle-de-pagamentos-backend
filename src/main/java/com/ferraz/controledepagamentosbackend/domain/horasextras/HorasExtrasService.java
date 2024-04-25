@@ -55,6 +55,10 @@ public class HorasExtrasService {
         return page;
     }
 
+    public HorasExtras findById(Long id) {
+        return repository.findById(id).orElseThrow();
+    }
+
     // Read - list - findById
     // Update
     // Delete

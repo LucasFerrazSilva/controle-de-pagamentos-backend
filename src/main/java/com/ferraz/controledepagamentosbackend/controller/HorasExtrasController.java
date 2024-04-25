@@ -47,4 +47,11 @@ public class HorasExtrasController {
         return ResponseEntity.ok(pageDTO);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<HorasExtrasDTO> findById(@PathVariable("id") Long id) {
+        HorasExtras horasExtras = service.findById(id);
+        HorasExtrasDTO dto = new HorasExtrasDTO(horasExtras);
+        return ResponseEntity.ok(dto);
+    }
+
 }

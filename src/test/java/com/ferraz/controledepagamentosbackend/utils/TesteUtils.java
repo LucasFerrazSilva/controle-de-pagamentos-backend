@@ -2,6 +2,7 @@ package com.ferraz.controledepagamentosbackend.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
@@ -80,21 +81,14 @@ public class TesteUtils {
     	return user;
     }
 
-    public static HorasExtrasDTO createHorasExtras(User aprovador, JacksonTester<NovasHorasExtrasDTO> novasHorasExtrasDTOJacksonTester,
-                                                JacksonTester<HorasExtrasDTO> horasExtrasDTOJacksonTester,
-                                                MockMvc mvc, HttpHeaders httpHeaders) throws Exception {
-
+    public static HorasExtras createHorasExtras(User aprovador, HorasExtrasRepository repository) throws Exception {
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
                 "Descricao hora extra",
                 aprovador.getId());
-        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
-        RequestBuilder requestBuilder = post("/horas-extras").contentType(APPLICATION_JSON).content(dadosValidos).headers(httpHeaders);
-
-        // When
-        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
-        return horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
+        HorasExtras horasExtras = new HorasExtras(dto, aprovador, aprovador);
+        return repository.save(horasExtras);
     }
 
 }
