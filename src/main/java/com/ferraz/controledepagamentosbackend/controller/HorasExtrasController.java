@@ -3,6 +3,7 @@ package com.ferraz.controledepagamentosbackend.controller;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasService;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import jakarta.validation.Valid;
@@ -52,6 +53,13 @@ public class HorasExtrasController {
         HorasExtras horasExtras = service.findById(id);
         HorasExtrasDTO dto = new HorasExtrasDTO(horasExtras);
         return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<HorasExtrasDTO> update(@PathVariable("id") Long id, @RequestBody @Valid AtualizarHorasExtrasDTO atualizarHorasExtrasDTO) {
+        HorasExtras horasExtras = service.update(id, atualizarHorasExtrasDTO);
+        HorasExtrasDTO responseDTO = new HorasExtrasDTO(horasExtras);
+        return ResponseEntity.ok(responseDTO);
     }
 
 }

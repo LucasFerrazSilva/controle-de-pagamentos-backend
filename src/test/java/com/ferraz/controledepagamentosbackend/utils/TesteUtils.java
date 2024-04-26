@@ -8,6 +8,7 @@ import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasE
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
 import org.springframework.boot.test.json.JacksonTester;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Random;
 
 import static com.ferraz.controledepagamentosbackend.domain.user.UserStatus.ATIVO;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -47,6 +49,13 @@ public class TesteUtils {
         String password = TesteUtils.DEFAULT_PASSWORD;
         String name = "Nome Aprovador";
         User user = new User(null, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), "ROLE_ADMIN", ATIVO, LocalDateTime.now(), null, null, null);
+        return userRepository.save(user);
+    }
+
+    public static User createRandomUser(UserRepository userRepository) {
+        int randomNumber = new Random().nextInt(1000000);
+        DadosCreateUserDTO dto = new DadosCreateUserDTO("Usuario " + randomNumber, randomNumber + "@mail.com", DEFAULT_PASSWORD, new BigDecimal(randomNumber), "ROLE_ADMIN");
+        User user = new User(dto);
         return userRepository.save(user);
     }
 

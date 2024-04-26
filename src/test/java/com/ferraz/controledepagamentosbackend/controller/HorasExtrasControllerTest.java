@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasService;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
@@ -43,6 +44,8 @@ class HorasExtrasControllerTest {
     private MockMvc mvc;
     @Autowired
     private JacksonTester<NovasHorasExtrasDTO> novasHorasExtrasDTOJacksonTester;
+    @Autowired
+    private JacksonTester<AtualizarHorasExtrasDTO> atualizarHorasExtrasDTOJacksonTester;
     @Autowired
     private JacksonTester<HorasExtrasDTO> horasExtrasDTOJacksonTester;
     @Autowired
@@ -207,16 +210,29 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via PUT o endpoint /horas-extras passando dados e id válidos")
     void testUpdate() throws Exception {
         // Given
-        String dadosValidos = "";
-        Long idValido = null;
-        RequestBuilder requestBuilder = put(ENDPOINT + "/" + idValido).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        User randomUser = TesteUtils.createRandomUser(userRepository);
+        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        AtualizarHorasExtrasDTO dto = new AtualizarHorasExtrasDTO(
+                horasExtras.getDataHoraInicio().minusHours(1),
+                horasExtras.getDataHoraFim().plusHours(1),
+                "Nova descricao",
+                randomUser.getId()
+                    );
+        String dadosValidos = atualizarHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = put(ENDPOINT + "/" + horasExtras.getId()).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.getContentAsString()).isNotBlank();
+        HorasExtrasDTO responseDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
+        assertThat(responseDTO.id()).isEqualTo(horasExtras.getId());
+        assertThat(responseDTO.user().id()).isEqualTo(horasExtras.getUser().getId());
+        assertThat(responseDTO.dataHoraInicio()).isEqualTo(dto.dataHoraInicio());
+        assertThat(responseDTO.dataHoraFim()).isEqualTo(dto.dataHoraFim());
+        assertThat(responseDTO.descricao()).isEqualTo(dto.descricao());
+        assertThat(responseDTO.aprovador().id()).isEqualTo(dto.idAprovador());
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.ferraz.controledepagamentosbackend.domain.horasextras;
 
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.NovasHorasExtrasValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
@@ -61,6 +62,14 @@ public class HorasExtrasService {
 
     public HorasExtras findById(Long id) {
         return repository.findById(id).orElseThrow();
+    }
+
+    @Transactional
+    public HorasExtras update(Long id, AtualizarHorasExtrasDTO atualizarHorasExtrasDTO) {
+        HorasExtras horasExtras = repository.findById(id).orElseThrow();
+        User aprovador = userRepository.findById(atualizarHorasExtrasDTO.idAprovador()).orElseThrow();
+        horasExtras.update(atualizarHorasExtrasDTO, getLoggedUser(), aprovador);
+        return repository.save(horasExtras);
     }
 
     // Read - list - findById
