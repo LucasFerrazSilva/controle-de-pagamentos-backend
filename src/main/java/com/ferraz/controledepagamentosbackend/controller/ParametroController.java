@@ -2,6 +2,7 @@ package com.ferraz.controledepagamentosbackend.controller;
 
 import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
 import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroService;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroStatus;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.NovoParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.ParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
@@ -44,9 +45,12 @@ public class ParametroController {
 
     @GetMapping
     public ResponseEntity<Page<ParametroDTO>> getAll(
-            @PageableDefault Pageable pageable
+            @PageableDefault Pageable pageable,
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String valor,
+            @RequestParam(required = false) ParametroStatus status
             ){
-        Page<Parametro> parametros = parametroService.findAll(pageable);
+        Page<Parametro> parametros = parametroService.findAll(pageable, nome, valor, status);
         Page<ParametroDTO> parametrosDTO = parametros.map(ParametroDTO::new);
         return ResponseEntity.status(HttpStatus.OK).body(parametrosDTO);
     }
