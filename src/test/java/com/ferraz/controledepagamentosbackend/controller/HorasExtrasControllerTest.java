@@ -26,7 +26,10 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Optional;
@@ -166,6 +169,25 @@ class HorasExtrasControllerTest {
         // Given
         TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
         RequestBuilder requestBuilder = get(ENDPOINT).headers(token);
+
+        // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        HashMap<String,Object> page = new ObjectMapper().readValue(response.getContentAsString(), new TypeReference<>() {});
+        assertThat(page).containsEntry("numberOfElements", 1);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras")
+    void testList_ComDatas() throws Exception {
+        // Given
+        TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("dataInicio", LocalDate.now().minusDays(1).toString());
+        params.add("dataFim", LocalDate.now().plusDays(1).toString());
+        RequestBuilder requestBuilder = get(ENDPOINT).queryParams(params).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
