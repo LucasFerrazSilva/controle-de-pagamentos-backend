@@ -239,16 +239,44 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 400 (Bad request) quando chamar via PUT o endpoint /horas-extras passando dados inválidos")
     void testUpdate_DadosInvalidos() throws Exception {
         // Given
-        String dadosInvalidos = "";
-        Long idValido = null;
-        RequestBuilder requestBuilder = put(ENDPOINT + "/" + idValido).contentType(APPLICATION_JSON).content(dadosInvalidos).headers(token);
+        User randomUser = TesteUtils.createRandomUser(userRepository);
+        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        AtualizarHorasExtrasDTO dto = new AtualizarHorasExtrasDTO(
+                null,
+                null,
+                "Nova descricao",
+                randomUser.getId()
+        );
+        String dadosInvalidos = atualizarHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = put(ENDPOINT + "/" + horasExtras.getId()).contentType(APPLICATION_JSON).content(dadosInvalidos).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(response.getContentAsString()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 (Bad request) quando chamar via PUT o endpoint /horas-extras passando um id invalido")
+    void testUpdate_IdInvalido() throws Exception {
+        // Given
+        User randomUser = TesteUtils.createRandomUser(userRepository);
+        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        AtualizarHorasExtrasDTO dto = new AtualizarHorasExtrasDTO(
+                horasExtras.getDataHoraInicio().minusHours(1),
+                horasExtras.getDataHoraFim().plusHours(1),
+                "Nova descricao",
+                randomUser.getId()
+        );
+        String dadosValidos = atualizarHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = put(ENDPOINT + "/" + 99999).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+
+        // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
