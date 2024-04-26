@@ -60,10 +60,10 @@ public class HorasExtras {
     @JoinColumn(name = "UPDATE_USER_ID")
     private User updateUser;
 
-    public HorasExtras(NovasHorasExtrasDTO dto, User user, User aprovador) {
-        this.dataHoraInicio = dto.dataHoraInicio();
-        this.dataHoraFim = dto.dataHoraFim();
-        this.descricao = dto.descricao();
+    public HorasExtras(NovasHorasExtrasDTO novasHorasExtrasDTO, User user, User aprovador) {
+        this.dataHoraInicio = novasHorasExtrasDTO.dataHoraInicio();
+        this.dataHoraFim = novasHorasExtrasDTO.dataHoraFim();
+        this.descricao = novasHorasExtrasDTO.descricao();
         this.aprovador = aprovador;
 
         this.status = HorasExtrasStatus.SOLICITADO;
@@ -72,19 +72,23 @@ public class HorasExtras {
         this.user = user;
     }
 
-    public void update(AtualizarHorasExtrasDTO dto, User loggedUser, User aprovador) {
-        this.dataHoraInicio = dto.dataHoraInicio();
-        this.dataHoraFim = dto.dataHoraFim();
-        this.descricao = dto.descricao();
+    public void update(AtualizarHorasExtrasDTO atualizarHorasExtrasDTO, User loggedUser, User aprovador) {
+        this.dataHoraInicio = atualizarHorasExtrasDTO.dataHoraInicio();
+        this.dataHoraFim = atualizarHorasExtrasDTO.dataHoraFim();
+        this.descricao = atualizarHorasExtrasDTO.descricao();
         this.aprovador = aprovador;
 
-        this.updateDatetime = LocalDateTime.now();
-        this.updateUser = loggedUser;
+        update(loggedUser);
     }
 
     public void inativar(User loggedUser) {
         this.status = HorasExtrasStatus.INATIVO;
-        this.updateUser = loggedUser;
+
+        update(loggedUser);
+    }
+
+    private void update(User updateUser) {
+        this.updateUser = updateUser;
         this.updateDatetime = LocalDateTime.now();
     }
 }
