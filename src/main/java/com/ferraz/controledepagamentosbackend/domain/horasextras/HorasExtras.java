@@ -81,4 +81,10 @@ public class HorasExtras {
         this.updateDatetime = LocalDateTime.now();
         this.updateUser = loggedUser;
     }
+
+    public void inativar(User loggedUser) {
+        this.status = HorasExtrasStatus.INATIVO;
+        this.updateUser = loggedUser;
+        this.updateDatetime = LocalDateTime.now();
+    }
 }

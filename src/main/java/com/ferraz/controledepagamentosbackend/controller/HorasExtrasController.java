@@ -62,4 +62,11 @@ public class HorasExtrasController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> delete(@PathVariable("id") Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
 }

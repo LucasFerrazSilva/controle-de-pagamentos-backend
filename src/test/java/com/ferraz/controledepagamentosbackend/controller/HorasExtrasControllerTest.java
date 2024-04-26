@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasService;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.RequestBuilder;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -283,30 +285,34 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 204 (No content) quando chamar via DELETE o endpoint /horas-extras passando um id valido")
     void testDelete() throws Exception {
         // Given
-        Long idValido = null;
-        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + idValido).headers(token);
+        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + horasExtras.getId()).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
-        assertThat(response.getContentAsString()).isBlank();
+        Optional<HorasExtras> optional = horasExtrasRepository.findById(horasExtras.getId());
+        assertThat(optional).isPresent();
+        assertThat(optional.get().getStatus()).isEqualTo(HorasExtrasStatus.INATIVO);
     }
 
     @Test
     @DisplayName("Deve retornar 204 (No content) quando chamar via DELETE o endpoint /horas-extras passando um id valido")
     void testDelete_IdInvalido() throws Exception {
         // Given
-        Long idInvalido = null;
-        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + idInvalido).headers(token);
+        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + 9999).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-        assertThat(response.getContentAsString()).isNotBlank();
+        Optional<HorasExtras> optional = horasExtrasRepository.findById(horasExtras.getId());
+        assertThat(optional).isPresent();
+        assertThat(optional.get().getStatus()).isEqualTo(HorasExtrasStatus.SOLICITADO);
     }
 
 }

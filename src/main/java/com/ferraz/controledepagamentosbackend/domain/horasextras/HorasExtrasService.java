@@ -72,8 +72,11 @@ public class HorasExtrasService {
         return repository.save(horasExtras);
     }
 
-    // Read - list - findById
-    // Update
-    // Delete
+    @Transactional
+    public void delete(Long id) {
+        HorasExtras horasExtras = repository.findById(id).orElseThrow();
+        horasExtras.inativar(getLoggedUser());
+        repository.save(horasExtras);
+    }
 
 }
