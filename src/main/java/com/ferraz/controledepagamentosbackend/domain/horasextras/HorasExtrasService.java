@@ -1,6 +1,7 @@
 package com.ferraz.controledepagamentosbackend.domain.horasextras;
 
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.NovasHorasExtrasValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import jakarta.transaction.Transactional;
@@ -21,14 +22,17 @@ public class HorasExtrasService {
 
     private final HorasExtrasRepository repository;
     private final UserRepository userRepository;
+    private final List<NovasHorasExtrasValidator> novasHorasExtrasValidators;
 
-    public HorasExtrasService(HorasExtrasRepository repository, UserRepository userRepository) {
+    public HorasExtrasService(HorasExtrasRepository repository, UserRepository userRepository, List<NovasHorasExtrasValidator> novasHorasExtrasValidators) {
         this.repository = repository;
         this.userRepository = userRepository;
+        this.novasHorasExtrasValidators = novasHorasExtrasValidators;
     }
 
     @Transactional
     public HorasExtras create(NovasHorasExtrasDTO dto) {
+        novasHorasExtrasValidators.forEach(validator -> validator.validate(dto));
         User aprovador = userRepository.findById(dto.idAprovador()).orElseThrow();
         HorasExtras horasExtras = new HorasExtras(dto, getLoggedUser(), aprovador);
         repository.save(horasExtras);

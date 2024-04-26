@@ -57,7 +57,7 @@ class HorasExtrasControllerTest {
     @Autowired
     private HorasExtrasService horasExtrasService;
 
-    private HttpHeaders httpHeaders;
+    private HttpHeaders token;
 
     private final String ENDPOINT = "/horas-extras";
 
@@ -66,7 +66,7 @@ class HorasExtrasControllerTest {
     @BeforeAll
     @Transactional
     void beforeAll() throws Exception {
-        this.httpHeaders = TesteUtils.login(mvc, userRepository);
+        this.token = TesteUtils.login(mvc, userRepository);
         this.aprovador = TesteUtils.createAprovador(userRepository);
     }
 
@@ -91,7 +91,7 @@ class HorasExtrasControllerTest {
                 "Descricao hora extra",
                 aprovador.getId());
         String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
-        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(httpHeaders);
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -106,7 +106,7 @@ class HorasExtrasControllerTest {
     void testCreate_DadosInvalidos() throws Exception {
         // Given
         String dadosInvalidos = "";
-        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosInvalidos).headers(httpHeaders);
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosInvalidos).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -117,11 +117,50 @@ class HorasExtrasControllerTest {
     }
 
     @Test
+    @DisplayName("Deve retornar 400 (Bad request) quando chamar via POST o endpoint /horas-extras passando usuario e aprovador iguais")
+    void testCreate_UsuarioEAprovadorIguais() throws Exception {
+        // Given
+        HttpHeaders aprovadorToken = TesteUtils.login(mvc, aprovador);
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(aprovadorToken);
+
+        // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 (Bad request) quando chamar via POST o endpoint /horas-extras passando data/hora inicio posterior a data/hora fim")
+    void testCreate_DataInicioPosteriorDataFim() throws Exception {
+        // Given
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now().plusHours(4),
+                LocalDateTime.now(),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+
+        // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras")
     void testList() throws Exception {
         // Given
         TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
-        RequestBuilder requestBuilder = get(ENDPOINT).headers(httpHeaders);
+        RequestBuilder requestBuilder = get(ENDPOINT).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -137,7 +176,7 @@ class HorasExtrasControllerTest {
     void testFindById() throws Exception {
         // Given
         HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
-        RequestBuilder requestBuilder = get(ENDPOINT + "/" + horasExtras.getId()).headers(httpHeaders);
+        RequestBuilder requestBuilder = get(ENDPOINT + "/" + horasExtras.getId()).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -155,7 +194,7 @@ class HorasExtrasControllerTest {
     void testFindById_IdInvalido() throws Exception {
         // Given
         HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
-        RequestBuilder requestBuilder = get(ENDPOINT + "/" + 99999).headers(httpHeaders);
+        RequestBuilder requestBuilder = get(ENDPOINT + "/" + 99999).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -170,7 +209,7 @@ class HorasExtrasControllerTest {
         // Given
         String dadosValidos = "";
         Long idValido = null;
-        RequestBuilder requestBuilder = put(ENDPOINT + "/" + idValido).contentType(APPLICATION_JSON).content(dadosValidos).headers(httpHeaders);
+        RequestBuilder requestBuilder = put(ENDPOINT + "/" + idValido).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -186,7 +225,7 @@ class HorasExtrasControllerTest {
         // Given
         String dadosInvalidos = "";
         Long idValido = null;
-        RequestBuilder requestBuilder = put(ENDPOINT + "/" + idValido).contentType(APPLICATION_JSON).content(dadosInvalidos).headers(httpHeaders);
+        RequestBuilder requestBuilder = put(ENDPOINT + "/" + idValido).contentType(APPLICATION_JSON).content(dadosInvalidos).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -201,7 +240,7 @@ class HorasExtrasControllerTest {
     void testDelete() throws Exception {
         // Given
         Long idValido = null;
-        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + idValido).headers(httpHeaders);
+        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + idValido).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
@@ -216,7 +255,7 @@ class HorasExtrasControllerTest {
     void testDelete_IdInvalido() throws Exception {
         // Given
         Long idInvalido = null;
-        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + idInvalido).headers(httpHeaders);
+        RequestBuilder requestBuilder = delete(ENDPOINT + "/" + idInvalido).headers(token);
 
         // When
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
