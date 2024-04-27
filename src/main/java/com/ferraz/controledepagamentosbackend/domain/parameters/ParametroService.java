@@ -28,7 +28,7 @@ public class ParametroService {
     }
 
     public Page<Parametro> findAll(Pageable pageable, String nome, String valor, ParametroStatus status){
-        return parametroRepository.findFiltros(pageable, nome, valor, status);
+        return parametroRepository.findByFiltros(pageable, nome, valor, status);
     }
     public Parametro findOne(Long id){
 

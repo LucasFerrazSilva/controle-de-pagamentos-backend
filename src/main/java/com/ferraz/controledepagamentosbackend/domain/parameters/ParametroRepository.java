@@ -10,10 +10,10 @@ public interface ParametroRepository extends JpaRepository<Parametro, Long> {
 
 
     @Query("SELECT p FROM Parametro p " +
-            "WHERE (:nome IS NULL OR :nome = p.nome) " +
-            "AND (:valor IS NULL OR :valor = p.valor) " +
-            "AND (:status IS NULL OR :status = p.status)")
-    Page<Parametro> findFiltros(
+            "WHERE (:nome IS NULL OR p.nome = :nome) " +
+            "AND (:valor IS NULL OR p.valor = :valor) " +
+            "AND (:status IS NULL OR p.status = :status)")
+    Page<Parametro> findByFiltros(
             Pageable pageable,
             @Param("nome") String nome,
             @Param("valor") String valor,
