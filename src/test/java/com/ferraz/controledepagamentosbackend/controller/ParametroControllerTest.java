@@ -42,7 +42,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ParametroControllerTest {
-    int contador;
     @Autowired
     private MockMvc mvc;
     @Autowired
@@ -72,8 +71,6 @@ class ParametroControllerTest {
     @Transactional
     void beforeAll() throws Exception {
         userRepository.deleteAll();
-
-        contador = 0;
         Long id = 1L;
         String email = "teste@teste.com";
         String password = TesteUtils.DEFAULT_PASSWORD;
@@ -89,7 +86,7 @@ class ParametroControllerTest {
     @Transactional
     void beforeEach() {
 
-        NovoParametroDTO novoParametroDTO1 = new NovoParametroDTO("parametro_" + contador, "valor_1");
+        NovoParametroDTO novoParametroDTO1 = new NovoParametroDTO("parametro_1", "valor_1");
         parametro1 = parametroRepository.save(new Parametro(novoParametroDTO1, this.user));
 
         NovoParametroDTO novoParametroDTO2 = new NovoParametroDTO("parametro_2", "valor_2");
@@ -102,7 +99,6 @@ class ParametroControllerTest {
     @AfterEach
     @Transactional
     void afterEach() {
-        contador++;
         parametroRepository.deleteAll();
     }
 
@@ -166,7 +162,7 @@ class ParametroControllerTest {
         }
 
         assertThat(parametrosList).hasSize(3);
-        assertThat(parametrosList.get(0).nome()).isEqualTo("parametro_" + contador);
+        assertThat(parametrosList.get(0).nome()).isEqualTo("parametro_1");
         assertThat(parametrosList.get(1).valor()).isEqualTo("valor_2");
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
     }
