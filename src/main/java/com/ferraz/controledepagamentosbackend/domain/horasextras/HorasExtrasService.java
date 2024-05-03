@@ -79,4 +79,9 @@ public class HorasExtrasService {
         repository.save(horasExtras);
     }
 
+	public HorasExtras avaliarHora() {
+		
+		return null;
+	}
+
 }
