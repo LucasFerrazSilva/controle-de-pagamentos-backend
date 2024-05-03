@@ -29,7 +29,7 @@ public class Parametro {
     @Column(name="VALOR", nullable = false)
     private String valor;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name="STATUS")
     private ParametroStatus status;
 
