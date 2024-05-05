@@ -3,6 +3,8 @@ package com.ferraz.controledepagamentosbackend.domain.user.dto;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 
+import java.math.BigDecimal;
+
 public record UserDTO(
         Long id,
 
@@ -12,10 +14,12 @@ public record UserDTO(
 
         String perfil,
 
-        UserStatus status
+        UserStatus status,
+
+        BigDecimal salario
 ) {
     public UserDTO(User user) {
-        this(user.getId(), user.getNome(), user.getEmail(), user.getPerfil(), user.getStatus());
+        this(user.getId(), user.getNome(), user.getEmail(), user.getPerfil(), user.getStatus(), user.getSalario());
     }
 
 }
