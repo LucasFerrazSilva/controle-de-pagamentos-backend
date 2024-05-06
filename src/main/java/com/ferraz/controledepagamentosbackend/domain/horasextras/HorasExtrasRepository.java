@@ -1,10 +1,13 @@
 package com.ferraz.controledepagamentosbackend.domain.horasextras;
 
+import com.ferraz.controledepagamentosbackend.domain.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface HorasExtrasRepository extends JpaRepository<HorasExtras, Long> {
 
@@ -18,5 +21,8 @@ public interface HorasExtrasRepository extends JpaRepository<HorasExtras, Long> 
                                     @Param("idAprovador") Long idAprovador, @Param("descricao") String descricao,
                                     @Param("status") HorasExtrasStatus status
     );
+
+    List<HorasExtras> findByUserAndStatusIn(User user, List<HorasExtrasStatus> status);
+    List<HorasExtras> findByIdNotAndUserAndStatusIn(Long id, User user, List<HorasExtrasStatus> status);
 
 }

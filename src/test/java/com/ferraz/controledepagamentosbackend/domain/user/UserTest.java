@@ -23,7 +23,7 @@ class UserTest {
         String email = "usuario@mail.com";
         String senha = "1234";
         BigDecimal salario = new BigDecimal("1234");
-        String perfil = "ROLE_ADMIN";
+        UsuarioPerfil perfil = UsuarioPerfil.ROLE_ADMIN;
         UserStatus status = UserStatus.ATIVO;
         LocalDateTime createDatetime = LocalDateTime.now();
         User createUser = new User();
@@ -51,7 +51,7 @@ class UserTest {
         assertThat(user.isCredentialsNonExpired()).isTrue();
         assertThat(user.isEnabled()).isEqualTo(status == UserStatus.ATIVO);
 
-        assertThat(user.getAuthorities()).isEqualTo(List.of(new SimpleGrantedAuthority(perfil)));
+        assertThat(user.getAuthorities()).isEqualTo(List.of(new SimpleGrantedAuthority(perfil.toString())));
     }
 
     @Test
@@ -74,7 +74,7 @@ class UserTest {
         // Given
         User user = createUser();
         User user2 = createUser();
-        user2.setPerfil("abc"); // troca campo irrelevante
+        user2.setPerfil(UsuarioPerfil.ROLE_GESTOR); // troca campo irrelevante
         User user3 = createUser();
         user3.setId(99l); // troca campo relevante
 
@@ -93,7 +93,7 @@ class UserTest {
         String email = "usuario@mail.com";
         String senha = "1234";
         BigDecimal salario = new BigDecimal("1234");
-        String perfil = "ROLE_ADMIN";
+        UsuarioPerfil perfil = UsuarioPerfil.ROLE_ADMIN;
         UserStatus status = UserStatus.ATIVO;
         LocalDateTime createDatetime = LocalDateTime.now();
         User createUser = new User();

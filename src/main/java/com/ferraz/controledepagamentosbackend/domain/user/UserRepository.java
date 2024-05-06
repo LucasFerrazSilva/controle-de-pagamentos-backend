@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.List;
+
 public interface UserRepository extends JpaRepository<User, Long> {
 
     User findByEmail(String email);
@@ -16,6 +18,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmailAndIdNot(String email, Long id);
 
 	boolean existsByEmail(@NotBlank @Email String email);
+
+	List<User> findByPerfilAndStatusOrderByNome(UsuarioPerfil perfil, UserStatus status);
 	
 	
 	@Query("SELECT u FROM User u " +
