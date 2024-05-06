@@ -9,6 +9,7 @@ import com.ferraz.controledepagamentosbackend.domain.parameters.dto.ParametroDTO
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
@@ -73,7 +74,7 @@ class ParametroControllerTest {
         String email = "teste@teste.com";
         String password = TesteUtils.DEFAULT_PASSWORD;
         String name = "Nome Teste";
-        this.user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), "ROLE_ADMIN", ATIVO, LocalDateTime.now(), null, null, null);
+        this.user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), UsuarioPerfil.ROLE_ADMIN, ATIVO, LocalDateTime.now(), null, null, null);
 
         this.user = userRepository.save(user);
         httpHeaders = TesteUtils.login(mvc, this.user);

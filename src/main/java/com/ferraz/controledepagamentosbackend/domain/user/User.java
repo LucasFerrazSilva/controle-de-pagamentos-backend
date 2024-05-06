@@ -57,14 +57,14 @@ public class User implements UserDetails {
     @Column(name="SALARIO", nullable = false)
     private BigDecimal salario;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="PERFIL", nullable = false)
-    private String perfil;
+    private UsuarioPerfil perfil;
 
     @Enumerated(EnumType.STRING)
     @Column(name="STATUS")
     private UserStatus status;
 
-    
     @Column(name="CREATE_DATETIME")
     private LocalDateTime createDateTime;
 
@@ -81,7 +81,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(this.perfil));
+        return List.of(new SimpleGrantedAuthority(this.perfil.toString()));
     }
 
     @Override

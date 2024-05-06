@@ -9,6 +9,7 @@ import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasE
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,10 +38,10 @@ public class HorasExtrasController {
 
     @GetMapping
     public ResponseEntity<Page<HorasExtrasDTO>> list(
-            @PageableDefault Pageable pageable, @RequestParam(required = false) Long idUsuario,
+            @PageableDefault(sort="dataHoraFim", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false) Long idUsuario,
             @RequestParam(required = false) Long idAprovador, @RequestParam(required = false) LocalDate dataInicio,
             @RequestParam(required = false) LocalDate dataFim, @RequestParam(required = false) String descricao,
-            @RequestParam(required = false) HorasExtrasStatus status) {
+            @RequestParam HorasExtrasStatus status) {
 
         Page<HorasExtras> page = service.list(pageable, idUsuario, idAprovador, dataInicio, dataFim, descricao, status);
 

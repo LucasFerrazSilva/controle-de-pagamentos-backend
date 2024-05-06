@@ -4,13 +4,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasService;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Optional;
 
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -54,16 +55,9 @@ class HorasExtrasControllerTest {
     @Autowired
     private JacksonTester<HorasExtrasDTO> horasExtrasDTOJacksonTester;
     @Autowired
-    private JacksonTester<Page<HorasExtrasDTO>> pageHorasExtrasDTOJacksonTester;
-
-    @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private HorasExtrasRepository horasExtrasRepository;
-
-    @Autowired
-    private HorasExtrasService horasExtrasService;
 
     private HttpHeaders token;
 
@@ -71,10 +65,11 @@ class HorasExtrasControllerTest {
 
     private User aprovador;
 
+
     @BeforeAll
     @Transactional
     void beforeAll() throws Exception {
-        this.token = TesteUtils.login(mvc, userRepository);
+        this.token = login(mvc, userRepository);
         this.aprovador = TesteUtils.createAprovador(userRepository);
     }
 
@@ -110,6 +105,27 @@ class HorasExtrasControllerTest {
     }
 
     @Test
+    @DisplayName("Deve retornar 400 (Bad Request) quando chamar via POST o endpoint /horas-extras passando data/hora ja utilizada")
+    void testCreate_DataHoraOcupada() throws Exception {
+        // Given
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(response.getContentAsString()).isNotBlank();
+    }
+
+    @Test
     @DisplayName("Deve retornar 400 (Bad request) quando chamar via POST o endpoint /horas-extras passando dados inválidos")
     void testCreate_DadosInvalidos() throws Exception {
         // Given
@@ -128,7 +144,7 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 400 (Bad request) quando chamar via POST o endpoint /horas-extras passando usuario e aprovador iguais")
     void testCreate_UsuarioEAprovadorIguais() throws Exception {
         // Given
-        HttpHeaders aprovadorToken = TesteUtils.login(mvc, aprovador);
+        HttpHeaders aprovadorToken = login(mvc, aprovador);
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
@@ -164,13 +180,56 @@ class HorasExtrasControllerTest {
     }
 
     @Test
+    @DisplayName("Deve retornar 400 (Bad Request) quando chamar via POST o endpoint /horas-extras passando um aprovador que nao tem perfil para aprovar")
+    void testCreate_AprovadorNaoTemPerfilNecessario() throws Exception {
+        // Given
+        User user = TesteUtils.createUser(userRepository, UsuarioPerfil.ROLE_USER);
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                user.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+
+        // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(response.getContentAsString()).isNotBlank();
+    }
+
+    @Test
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras")
     void testList() throws Exception {
         // Given
-        TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
-        RequestBuilder requestBuilder = get(ENDPOINT).headers(token);
+        createHorasExtras(aprovador, horasExtrasRepository);
+        RequestBuilder requestBuilder = get(ENDPOINT).queryParam("status", HorasExtrasStatus.SOLICITADO.toString()).headers(token);
 
         // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        HashMap<String,Object> page = new ObjectMapper().readValue(response.getContentAsString(), new TypeReference<>() {});
+        assertThat(page).containsEntry("numberOfElements", 1);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras, mas so retornar as horas extras do usuario logado")
+    void testList_SoRetornarHorasExtrasDoUsuarioLogado() throws Exception {
+        // Given
+        User user1 = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        User user2 = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+
+        createHorasExtras(user1, aprovador, horasExtrasRepository);
+        createHorasExtras(user2, aprovador, horasExtrasRepository);
+
+        HttpHeaders token = login(mvc, user1);
+
+        // When
+        RequestBuilder requestBuilder = get(ENDPOINT).queryParam("status", HorasExtrasStatus.SOLICITADO.toString()).headers(token);
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
@@ -183,10 +242,11 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras")
     void testList_ComDatas() throws Exception {
         // Given
-        TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        createHorasExtras(aprovador, horasExtrasRepository);
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("dataInicio", LocalDate.now().minusDays(1).toString());
         params.add("dataFim", LocalDate.now().plusDays(1).toString());
+        params.add("status", HorasExtrasStatus.SOLICITADO.toString());
         RequestBuilder requestBuilder = get(ENDPOINT).queryParams(params).headers(token);
 
         // When
@@ -202,7 +262,7 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras passando um id valido")
     void testFindById() throws Exception {
         // Given
-        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
         RequestBuilder requestBuilder = get(ENDPOINT + "/" + horasExtras.getId()).headers(token);
 
         // When
@@ -220,7 +280,7 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 404 (Not found) quando chamar via GET o endpoint /horas-extras passando um id invalido")
     void testFindById_IdInvalido() throws Exception {
         // Given
-        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        createHorasExtras(aprovador, horasExtrasRepository);
         RequestBuilder requestBuilder = get(ENDPOINT + "/" + 99999).headers(token);
 
         // When
@@ -234,8 +294,8 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via PUT o endpoint /horas-extras passando dados e id válidos")
     void testUpdate() throws Exception {
         // Given
-        User randomUser = TesteUtils.createRandomUser(userRepository);
-        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
         AtualizarHorasExtrasDTO dto = new AtualizarHorasExtrasDTO(
                 horasExtras.getDataHoraInicio().minusHours(1),
                 horasExtras.getDataHoraFim().plusHours(1),
@@ -263,8 +323,8 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 400 (Bad request) quando chamar via PUT o endpoint /horas-extras passando dados inválidos")
     void testUpdate_DadosInvalidos() throws Exception {
         // Given
-        User randomUser = TesteUtils.createRandomUser(userRepository);
-        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
         AtualizarHorasExtrasDTO dto = new AtualizarHorasExtrasDTO(
                 null,
                 null,
@@ -285,8 +345,8 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 400 (Bad request) quando chamar via PUT o endpoint /horas-extras passando um id invalido")
     void testUpdate_IdInvalido() throws Exception {
         // Given
-        User randomUser = TesteUtils.createRandomUser(userRepository);
-        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
         AtualizarHorasExtrasDTO dto = new AtualizarHorasExtrasDTO(
                 horasExtras.getDataHoraInicio().minusHours(1),
                 horasExtras.getDataHoraFim().plusHours(1),
@@ -307,7 +367,7 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 204 (No content) quando chamar via DELETE o endpoint /horas-extras passando um id valido")
     void testDelete() throws Exception {
         // Given
-        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
         RequestBuilder requestBuilder = delete(ENDPOINT + "/" + horasExtras.getId()).headers(token);
 
         // When
@@ -324,7 +384,7 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 204 (No content) quando chamar via DELETE o endpoint /horas-extras passando um id valido")
     void testDelete_IdInvalido() throws Exception {
         // Given
-        HorasExtras horasExtras = TesteUtils.createHorasExtras(aprovador, horasExtrasRepository);
+        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
         RequestBuilder requestBuilder = delete(ENDPOINT + "/" + 9999).headers(token);
 
         // When

@@ -2,6 +2,7 @@ package com.ferraz.controledepagamentosbackend.domain.user.dto;
 
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 
 public record UserDTO(
         Long id,
@@ -10,7 +11,7 @@ public record UserDTO(
 
         String email,
 
-        String perfil,
+        UsuarioPerfil perfil,
 
         UserStatus status
 ) {

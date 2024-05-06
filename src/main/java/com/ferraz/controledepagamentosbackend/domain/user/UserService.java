@@ -64,8 +64,10 @@ public class UserService {
 	}
 
 	public User listarUserPorId(Long id) {
-		User user = repository.findById(id).orElseThrow();
-		return user;
+		return repository.findById(id).orElseThrow();
 	}
-	
+
+    public List<User> listarPorPerfil(UsuarioPerfil usuarioPerfil) {
+		return repository.findByPerfilAndStatusOrderByNome(usuarioPerfil, UserStatus.ATIVO);
+	}
 }
