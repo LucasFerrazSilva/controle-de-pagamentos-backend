@@ -1,5 +1,6 @@
 package com.ferraz.controledepagamentosbackend.domain.horasextras;
 
+
 import static com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService.getLoggedUser;
 
 import java.time.LocalDate;
@@ -15,10 +16,12 @@ import org.springframework.stereotype.Service;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AvaliarHorasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.AtualizarHorasExtrasValidator;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.AvaliarHorasValidator;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.NovasHorasExtrasValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 
 import jakarta.transaction.Transactional;
 
@@ -29,14 +32,19 @@ public class HorasExtrasService {
     private final UserRepository userRepository;
     private final List<NovasHorasExtrasValidator> novasHorasExtrasValidators;
     private final List<AvaliarHorasValidator> avaliarHorasValidators;
+    private final List<AtualizarHorasExtrasValidator> atualizarHorasExtrasValidators;
 
-    public HorasExtrasService(HorasExtrasRepository repository, UserRepository userRepository, 
-    		List<NovasHorasExtrasValidator> novasHorasExtrasValidators,
-    		List<AvaliarHorasValidator> avaliarHorasValidators) {
-    	this.avaliarHorasValidators = avaliarHorasValidators;
-        this.repository = repository;
-        this.userRepository = userRepository;
-        this.novasHorasExtrasValidators = novasHorasExtrasValidators;
+    public HorasExtrasService(HorasExtrasRepository repository, 
+    		UserRepository userRepository, 
+    		List<NovasHorasExtrasValidator> novasHorasExtrasValidators, 
+    		List<AvaliarHorasValidator> avaliarHorasValidator,
+    		List<AtualizarHorasExtrasValidator> atualizarHorasExtrasValidators) {
+
+    	this.repository = repository;
+    	this.userRepository = userRepository;
+    	this.novasHorasExtrasValidators = novasHorasExtrasValidators;
+    	this.avaliarHorasValidators = avaliarHorasValidator;
+    	this.atualizarHorasExtrasValidators = atualizarHorasExtrasValidators;
     }
 
     @Transactional
@@ -50,6 +58,9 @@ public class HorasExtrasService {
 
     public Page<HorasExtras> list(Pageable pageable, Long idUsuario, Long idAprovador, LocalDate dataInicio,
                                   LocalDate dataFim, String descricao, HorasExtrasStatus status) {
+
+        if (getLoggedUser().getPerfil().equals(UsuarioPerfil.ROLE_USER))
+            idUsuario = getLoggedUser().getId();
 
         Page<HorasExtras> page = repository.findByFiltros(pageable, idUsuario, idAprovador, descricao, status);
 
@@ -74,6 +85,7 @@ public class HorasExtrasService {
 
     @Transactional
     public HorasExtras update(Long id, AtualizarHorasExtrasDTO atualizarHorasExtrasDTO) {
+        atualizarHorasExtrasValidators.forEach(validator -> validator.validate(id, atualizarHorasExtrasDTO));
         HorasExtras horasExtras = repository.findById(id).orElseThrow();
         User aprovador = userRepository.findById(atualizarHorasExtrasDTO.idAprovador()).orElseThrow();
         horasExtras.update(atualizarHorasExtrasDTO, getLoggedUser(), aprovador);

@@ -1,5 +1,6 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomUser;
 import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createUser;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -10,7 +11,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -51,6 +59,9 @@ class UserControllerTest {
 	
     @Autowired
     private UserRepository userRepository;
+
+	@Autowired
+	private JacksonTester<List<UserDTO>> userDtoListJackson;
     
     private HttpHeaders headers;
     
@@ -74,7 +85,7 @@ class UserControllerTest {
     	String email = "Teste@teste.com.br";
     	String senha = "SenhaTeste";
     	BigDecimal salario = new BigDecimal("123.0");
-    	String perfil = "ROLE_ADMIN";
+		UsuarioPerfil perfil = UsuarioPerfil.ROLE_ADMIN;
     	DadosCreateUserDTO dadosUserDTO = new DadosCreateUserDTO(nome, email, senha, salario, perfil);
     	String jsonString = objectMapper.writeValueAsString(dadosUserDTO);
     	
@@ -95,7 +106,7 @@ class UserControllerTest {
     	String email = "test@test.com.br";
     	String senha = "SenhaTeste";
     	BigDecimal salario = new BigDecimal("100.00");
-    	String perfil = "ROLE_ADMIN";
+		UsuarioPerfil perfil = UsuarioPerfil.ROLE_ADMIN;
     	
     	//Converte dados para uma DTO no corpo da requisição
     	DadosCreateUserDTO dadosUserDTO = new DadosCreateUserDTO(nome, email, senha, salario, perfil);
@@ -165,7 +176,7 @@ class UserControllerTest {
     	user2.setEmail("emailAlteravel@gmail.com");
     	user2.setSenha(new BCryptPasswordEncoder().encode("123"));
     	user2.setSalario(new BigDecimal("100.0"));
-    	user2.setPerfil("ROLE_ADMIN");
+    	user2.setPerfil(UsuarioPerfil.ROLE_ADMIN);
     	user2.setStatus(UserStatus.ATIVO);
     	user2.setCreateDateTime(LocalDateTime.now());
     	userRepository.save(user2);
@@ -201,5 +212,43 @@ class UserControllerTest {
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
-    
+
+	@Test
+	@DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /listar-por-perfil passando um perfil valido")
+	void testListarPorPerfil() throws Exception {
+		// Given
+		createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+		createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+
+		// When
+		RequestBuilder request = get(endpoint + "/listar-por-perfil/" + UsuarioPerfil.ROLE_USER).headers(headers);
+		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
+
+		// Then
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).isNotBlank();
+
+		List<UserDTO> list = userDtoListJackson.parse(response.getContentAsString()).getObject();
+		assertThat(list).hasSize(2);
+	}
+
+	@Test
+	@DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /listar-por-perfil passando um perfil valido")
+	void testListarPorPerfil_NenhumRegistroEncontado() throws Exception {
+		// Given
+		createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+		createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+
+		// When
+		RequestBuilder request = get(endpoint + "/listar-por-perfil/" + UsuarioPerfil.ROLE_GESTOR).headers(headers);
+		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
+
+		// Then
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).isNotBlank();
+
+		List<UserDTO> list = userDtoListJackson.parse(response.getContentAsString()).getObject();
+		assertThat(list).isEmpty();
+	}
+
 }
