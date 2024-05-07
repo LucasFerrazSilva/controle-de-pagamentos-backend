@@ -6,6 +6,6 @@ import java.util.Optional;
 
 public interface LinkRepository extends JpaRepository<Link, Long> {
 
-    Optional<Link> findByLinkAndStatus(String link, LinkStatus status);
+    Optional<Link> findByHashAndStatus(String hash, LinkStatus status);
 
 }

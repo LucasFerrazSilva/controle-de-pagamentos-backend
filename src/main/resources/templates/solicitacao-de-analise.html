@@ -21,6 +21,35 @@
             padding: 10px 20px;
         }
 
+        .row {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .row a {
+            width: 49%;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            line-height: 30px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        #link-aprovar {
+            border: 1px solid #072;
+            background-color: #093;
+        }
+
+        #link-recusar {
+            margin-left: 2%;
+            border: 1px solid #900;
+            background-color: #a00;
+        }
+
         #assinatura {
             font-weight: bold;
         }
@@ -32,7 +61,11 @@
         <p>O <span th:text="${nomeSolicitante}"></span> solicitou a sua aprovação para a realização das horas extras realizadas
             com início em <span th:text="${inicioHorasExtras}"></span> e fim em <span th:text="${fimHorasExtras}"></span>.</p>
         <p>Descrição: <span th:text="${descricao}"></span></p>
-        <p>Acesse o sistema para aprovar ou recusar a solicitação.</p>
+        <div class="row">
+            <a id="link-aprovar" th:href="${linkAprovar}">Aprovar</a>
+            <a id="link-recusar" th:href="${linkRecusar}">Recusar</a>
+        </div>
+        <p>Ou acesse o sistema para aprovar ou recusar a solicitação.</p>
         <p id="assinatura">Controle de Pagamentos</p>
     </div>
 </body>

@@ -25,7 +25,7 @@ public class Link {
     private Long id;
 
     @Column(name = "LINK")
-    private String link;
+    private String hash;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_HORA_EXTRA")
@@ -53,8 +53,8 @@ public class Link {
     @JoinColumn(name = "UPDATE_USER_ID")
     private User updateUser;
 
-    public Link(String link, HorasExtras horasExtras, AcaoLink acao, User createUser) {
-        this.link = link;
+    public Link(String hash, HorasExtras horasExtras, AcaoLink acao, User createUser) {
+        this.hash = hash;
         this.horasExtras = horasExtras;
         this.acao = acao;
 
@@ -66,7 +66,7 @@ public class Link {
     public void atualizar(LinkStatus status, User updateUser) {
         this.status = status;
         this.updateUser = updateUser;
-        this.updateDatetime = updateDatetime;
+        this.updateDatetime = LocalDateTime.now();
     }
 
 }
