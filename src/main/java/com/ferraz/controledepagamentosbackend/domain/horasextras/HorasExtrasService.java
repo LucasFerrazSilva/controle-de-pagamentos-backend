@@ -7,16 +7,25 @@ import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.Nov
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
+import com.ferraz.controledepagamentosbackend.infra.email.EmailDTO;
+import com.ferraz.controledepagamentosbackend.infra.email.EmailService;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService.getLoggedUser;
 
@@ -27,12 +36,18 @@ public class HorasExtrasService {
     private final UserRepository userRepository;
     private final List<NovasHorasExtrasValidator> novasHorasExtrasValidators;
     private final List<AtualizarHorasExtrasValidator> atualizarHorasExtrasValidators;
+    private SpringTemplateEngine templateEngine;
+    private EmailService emailService;
+    @Value("${application_sender}")
+    private String applicationSender;
 
-    public HorasExtrasService(HorasExtrasRepository repository, UserRepository userRepository, List<NovasHorasExtrasValidator> novasHorasExtrasValidators, List<AtualizarHorasExtrasValidator> atualizarHorasExtrasValidators) {
+    public HorasExtrasService(HorasExtrasRepository repository, UserRepository userRepository, List<NovasHorasExtrasValidator> novasHorasExtrasValidators, List<AtualizarHorasExtrasValidator> atualizarHorasExtrasValidators, SpringTemplateEngine templateEngine, EmailService emailService) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.novasHorasExtrasValidators = novasHorasExtrasValidators;
         this.atualizarHorasExtrasValidators = atualizarHorasExtrasValidators;
+        this.templateEngine = templateEngine;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -41,7 +56,28 @@ public class HorasExtrasService {
         User aprovador = userRepository.findById(dto.idAprovador()).orElseThrow();
         HorasExtras horasExtras = new HorasExtras(dto, getLoggedUser(), aprovador);
         repository.save(horasExtras);
+        enviarEmailDeSolicitacaoDeAprovacao(horasExtras);
         return horasExtras;
+    }
+
+    private void enviarEmailDeSolicitacaoDeAprovacao(HorasExtras horasExtras) {
+        String subject = "Solicitação de aprovação de horas extras";
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("nomeAprovador", horasExtras.getAprovador().getNome());
+        variables.put("nomeSolicitante", horasExtras.getUser().getNome());
+        variables.put("inicioHorasExtras", horasExtras.getDataHoraInicio().format(formatter));
+        variables.put("fimHorasExtras", horasExtras.getDataHoraFim().format(formatter));
+        variables.put("descricao", horasExtras.getDescricao());
+        Context context = new Context();
+        context.setVariables(variables);
+        String html = templateEngine.process("solicitacao-de-analise.html", context);
+
+        EmailDTO emailDTO = new EmailDTO(applicationSender, horasExtras.getAprovador().getEmail(), subject, html);
+
+        this.emailService.sendMailSMTP(emailDTO);
     }
 
     public Page<HorasExtras> list(Pageable pageable, Long idUsuario, Long idAprovador, LocalDate dataInicio,
@@ -77,7 +113,9 @@ public class HorasExtrasService {
         HorasExtras horasExtras = repository.findById(id).orElseThrow();
         User aprovador = userRepository.findById(atualizarHorasExtrasDTO.idAprovador()).orElseThrow();
         horasExtras.update(atualizarHorasExtrasDTO, getLoggedUser(), aprovador);
-        return repository.save(horasExtras);
+        repository.save(horasExtras);
+        enviarEmailDeSolicitacaoDeAprovacao(horasExtras);
+        return horasExtras;
     }
 
     @Transactional

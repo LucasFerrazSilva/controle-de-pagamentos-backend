@@ -21,7 +21,7 @@ public class EmailService {
     }
 
     public Boolean sendMailSMTP(EmailDTO emailDTO) {
-        try{
+        try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, MULTIPART_MODE_MIXED_RELATED, UTF_8.name());
             helper.setSubject(emailDTO.subject());
@@ -30,7 +30,7 @@ public class EmailService {
             helper.setText(emailDTO.html(), true);
             mailSender.send(message);
             return true;
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             Logger.getLogger(EmailService.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
