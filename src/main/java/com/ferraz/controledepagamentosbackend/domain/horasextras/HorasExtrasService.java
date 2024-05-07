@@ -1,22 +1,26 @@
 package com.ferraz.controledepagamentosbackend.domain.horasextras;
 
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.NovasHorasExtrasValidator;
-import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
+import static com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService.getLoggedUser;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-import static com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService.getLoggedUser;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AvaliarHorasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.AvaliarHorasValidator;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.NovasHorasExtrasValidator;
+import com.ferraz.controledepagamentosbackend.domain.user.User;
+import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class HorasExtrasService {
@@ -24,8 +28,12 @@ public class HorasExtrasService {
     private final HorasExtrasRepository repository;
     private final UserRepository userRepository;
     private final List<NovasHorasExtrasValidator> novasHorasExtrasValidators;
+    private final List<AvaliarHorasValidator> avaliarHorasValidators;
 
-    public HorasExtrasService(HorasExtrasRepository repository, UserRepository userRepository, List<NovasHorasExtrasValidator> novasHorasExtrasValidators) {
+    public HorasExtrasService(HorasExtrasRepository repository, UserRepository userRepository, 
+    		List<NovasHorasExtrasValidator> novasHorasExtrasValidators,
+    		List<AvaliarHorasValidator> avaliarHorasValidators) {
+    	this.avaliarHorasValidators = avaliarHorasValidators;
         this.repository = repository;
         this.userRepository = userRepository;
         this.novasHorasExtrasValidators = novasHorasExtrasValidators;
@@ -79,9 +87,13 @@ public class HorasExtrasService {
         repository.save(horasExtras);
     }
 
-	public HorasExtras avaliarHora() {
+    @Transactional
+	public HorasExtras avaliarHora(AvaliarHorasDTO dados) {
+    	avaliarHorasValidators.forEach(validator -> validator.validate(dados));
+		HorasExtras hora = repository.findById(dados.id()).orElseThrow();
+		User aprovador = userRepository.findById(hora.getAprovador().getId()).orElseThrow();
 		
-		return null;
+		return hora;
 	}
 
 }

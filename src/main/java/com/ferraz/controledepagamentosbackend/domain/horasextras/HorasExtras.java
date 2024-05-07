@@ -1,6 +1,7 @@
 package com.ferraz.controledepagamentosbackend.domain.horasextras;
 
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AvaliarHorasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import jakarta.persistence.*;
@@ -90,5 +91,9 @@ public class HorasExtras {
     private void update(User updateUser) {
         this.updateUser = updateUser;
         this.updateDatetime = LocalDateTime.now();
+    }
+    
+    public void avaliarHoras(AvaliarHorasDTO dados) {
+    	
     }
 }
