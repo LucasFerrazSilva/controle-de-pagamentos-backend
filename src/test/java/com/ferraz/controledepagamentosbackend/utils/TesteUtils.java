@@ -3,22 +3,21 @@ package com.ferraz.controledepagamentosbackend.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
-import org.springframework.boot.test.json.JacksonTester;
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -39,7 +38,7 @@ public class TesteUtils {
         String email = "teste@teste.com";
         String password = TesteUtils.DEFAULT_PASSWORD;
         String name = "Nome Teste";
-        User user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), "ROLE_ADMIN", ATIVO, LocalDateTime.now(), null, null, null);
+        User user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), UsuarioPerfil.ROLE_ADMIN, ATIVO, LocalDateTime.now(), null, null, null);
         user = userRepository.save(user);
         return login(mvc, user);
     }
@@ -48,13 +47,14 @@ public class TesteUtils {
         String email = "aprovador@mail.com";
         String password = TesteUtils.DEFAULT_PASSWORD;
         String name = "Nome Aprovador";
-        User user = new User(null, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), "ROLE_ADMIN", ATIVO, LocalDateTime.now(), null, null, null);
+        User user = new User(null, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), UsuarioPerfil.ROLE_ADMIN, ATIVO, LocalDateTime.now(), null, null, null);
         return userRepository.save(user);
     }
 
-    public static User createRandomUser(UserRepository userRepository) {
+    @Transactional
+    public static User createRandomUser(UserRepository userRepository, UsuarioPerfil perfil) {
         int randomNumber = new Random().nextInt(1000000);
-        DadosCreateUserDTO dto = new DadosCreateUserDTO("Usuario " + randomNumber, randomNumber + "@mail.com", DEFAULT_PASSWORD, new BigDecimal(randomNumber), "ROLE_ADMIN");
+        DadosCreateUserDTO dto = new DadosCreateUserDTO("Usuario " + randomNumber, randomNumber + "@mail.com", new BCryptPasswordEncoder().encode(DEFAULT_PASSWORD), new BigDecimal(randomNumber), perfil);
         User user = new User(dto);
         return userRepository.save(user);
     }
@@ -74,14 +74,18 @@ public class TesteUtils {
         return httpHeaders;
     }
 
-    
     public static User createUser(UserRepository userRepository) {
+        return createUser(userRepository, UsuarioPerfil.ROLE_ADMIN);
+    }
+
+    
+    public static User createUser(UserRepository userRepository, UsuarioPerfil perfil) {
     	User user = new User();
     	user.setNome("Luis");
     	user.setEmail("test@test.com.br");
     	user.setSenha(new BCryptPasswordEncoder().encode("1234"));
     	user.setSalario(new BigDecimal("100.0"));
-    	user.setPerfil("ROLE_ADMIN");
+    	user.setPerfil(perfil);
 		user.setStatus(UserStatus.ATIVO);
 		user.setCreateDateTime(LocalDateTime.now());
 		user.setUpdateDatetime(null);
@@ -91,12 +95,16 @@ public class TesteUtils {
     }
 
     public static HorasExtras createHorasExtras(User aprovador, HorasExtrasRepository repository) throws Exception {
+        return createHorasExtras(aprovador, aprovador, repository);
+    }
+
+    public static HorasExtras createHorasExtras(User user, User aprovador, HorasExtrasRepository repository) throws Exception {
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
                 "Descricao hora extra",
                 aprovador.getId());
-        HorasExtras horasExtras = new HorasExtras(dto, aprovador, aprovador);
+        HorasExtras horasExtras = new HorasExtras(dto, user, aprovador);
         return repository.save(horasExtras);
     }
 

@@ -1,7 +1,9 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
 import java.net.URI;
+import java.util.List;
 
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -46,11 +48,18 @@ public class UserController {
 	
 	@GetMapping
 	public ResponseEntity<Page<UserDTO>> listar(@PageableDefault Pageable pageable, 
-			@RequestParam(required = false) String nome, @RequestParam(required = false) String email, 
+			@RequestParam(required = false) String nome, @RequestParam(required = false) String email,
 			@RequestParam(required = false) String perfil,@RequestParam(required = false) UserStatus status) {
 		Page<User> users = userService.listarUsuarios(pageable, nome, email, perfil,status);
 		Page<UserDTO> pageDTO = users.map(UserDTO::new);
 		return ResponseEntity.ok().body(pageDTO);
+	}
+
+	@GetMapping("/listar-por-perfil/{perfil}")
+	public ResponseEntity<List<UserDTO>> listarPorPerfil(@PathVariable UsuarioPerfil perfil) {
+		List<User> users = userService.listarPorPerfil(perfil);
+		List<UserDTO> usersDTOs = users.stream().map(UserDTO::new).toList();
+		return ResponseEntity.ok(usersDTOs);
 	}
 	
 	@DeleteMapping("/{id}")
