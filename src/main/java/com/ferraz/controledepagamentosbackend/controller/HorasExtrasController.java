@@ -6,6 +6,8 @@ import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStat
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.link.AcaoLink;
+import com.ferraz.controledepagamentosbackend.domain.link.Link;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/horas-extras")
@@ -69,5 +72,10 @@ public class HorasExtrasController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/avaliar-via-link/{hash}")
+    public String avaliarSolicitacaoViaLink(@PathVariable UUID hash) {
+       Link link = service.avaliarViaLink(hash);
+       return link.getAcao().equals(AcaoLink.APROVAR) ? "Aprovado com sucesso." : "Recusado com sucesso.";
+    }
 
 }

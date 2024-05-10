@@ -84,6 +84,7 @@ class ParametroControllerTest {
     @BeforeEach
     @Transactional
     void beforeEach() {
+        parametroRepository.deleteAll();
 
         NovoParametroDTO novoParametroDTO1 = new NovoParametroDTO("parametro_" + contador, "valor_1");
         parametro1 = parametroRepository.save(new Parametro(novoParametroDTO1, this.user));
@@ -99,7 +100,6 @@ class ParametroControllerTest {
     @Transactional
     void afterEach() {
         contador++;
-        parametroRepository.deleteAll();
     }
 
     @Test

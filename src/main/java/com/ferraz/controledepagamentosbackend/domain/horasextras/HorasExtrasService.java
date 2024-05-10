@@ -3,10 +3,15 @@ package com.ferraz.controledepagamentosbackend.domain.horasextras;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.AtualizarHorasExtrasValidator;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.AvaliarViaLinkValidator;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.validations.NovasHorasExtrasValidator;
+import com.ferraz.controledepagamentosbackend.domain.link.Link;
+import com.ferraz.controledepagamentosbackend.domain.link.LinkRepository;
+import com.ferraz.controledepagamentosbackend.domain.link.LinkStatus;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
+import com.ferraz.controledepagamentosbackend.infra.exception.ValidationException;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 import static com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService.getLoggedUser;
 
@@ -27,15 +33,19 @@ public class HorasExtrasService {
     private final UserRepository userRepository;
     private final List<NovasHorasExtrasValidator> novasHorasExtrasValidators;
     private final List<AtualizarHorasExtrasValidator> atualizarHorasExtrasValidators;
-    private SolicitarAprovacaoService solicitarAprovacaoService;
+    private final LinkRepository linkRepository;
+    private final SolicitarAprovacaoService solicitarAprovacaoService;
+    private final List<AvaliarViaLinkValidator> avaliarViaLinkValidators;
 
-    public HorasExtrasService(HorasExtrasRepository repository, UserRepository userRepository, List<NovasHorasExtrasValidator> novasHorasExtrasValidators, List<AtualizarHorasExtrasValidator> atualizarHorasExtrasValidators, SolicitarAprovacaoService solicitarAprovacaoService) {
+    public HorasExtrasService(HorasExtrasRepository repository, UserRepository userRepository, List<NovasHorasExtrasValidator> novasHorasExtrasValidators, List<AtualizarHorasExtrasValidator> atualizarHorasExtrasValidators, LinkRepository linkRepository, SolicitarAprovacaoService solicitarAprovacaoService, List<AvaliarViaLinkValidator> avaliarViaLinkValidators) {
 
         this.repository = repository;
         this.userRepository = userRepository;
         this.novasHorasExtrasValidators = novasHorasExtrasValidators;
         this.atualizarHorasExtrasValidators = atualizarHorasExtrasValidators;
+        this.linkRepository = linkRepository;
         this.solicitarAprovacaoService = solicitarAprovacaoService;
+        this.avaliarViaLinkValidators = avaliarViaLinkValidators;
     }
 
     @Transactional
@@ -89,6 +99,22 @@ public class HorasExtrasService {
         HorasExtras horasExtras = repository.findById(id).orElseThrow();
         horasExtras.inativar(getLoggedUser());
         repository.save(horasExtras);
+    }
+
+    @Transactional
+    public Link avaliarViaLink(UUID id) {
+        Link link = linkRepository.findByIdAndStatus(id, LinkStatus.CRIADO)
+                .orElseThrow(() -> new ValidationException("hash", "Nenhum registro com status valido foi encontrado para o hash enviado"));
+        avaliarViaLinkValidators.forEach(validator -> validator.validate(link));
+
+        HorasExtras horasExtras = link.getHorasExtras();
+        horasExtras.avaliar(link.getAcao().getHorasExtrasStatus());
+        repository.save(horasExtras);
+
+        link.marcarComoUsado();
+        linkRepository.save(link);
+
+        return link;
     }
 
 }

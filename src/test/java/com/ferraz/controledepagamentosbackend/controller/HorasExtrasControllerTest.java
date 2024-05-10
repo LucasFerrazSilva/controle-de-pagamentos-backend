@@ -8,6 +8,7 @@ import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStat
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.link.LinkRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
@@ -58,6 +59,8 @@ class HorasExtrasControllerTest {
     private UserRepository userRepository;
     @Autowired
     private HorasExtrasRepository horasExtrasRepository;
+    @Autowired
+    private LinkRepository linkRepository;
 
     private HttpHeaders token;
 
@@ -75,11 +78,13 @@ class HorasExtrasControllerTest {
 
     @BeforeEach
     void beforeEach() {
+        linkRepository.deleteAll();
         horasExtrasRepository.deleteAll();
     }
 
     @AfterAll
     void afterAll() {
+        linkRepository.deleteAll();
         horasExtrasRepository.deleteAll();
         userRepository.deleteAll();
     }
@@ -396,5 +401,13 @@ class HorasExtrasControllerTest {
         assertThat(optional).isPresent();
         assertThat(optional.get().getStatus()).isEqualTo(HorasExtrasStatus.SOLICITADO);
     }
+
+    // -- Avaliar via link --
+    // aprovar
+    // recusar
+    // enviar hash invalido
+    // tentar avaliar horas extras ja avaliada
+    // tentar avaliar usando link ja usado
+    // tentar avaliar usando link expirado
 
 }

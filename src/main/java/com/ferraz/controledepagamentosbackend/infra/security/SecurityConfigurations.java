@@ -36,8 +36,10 @@ public class SecurityConfigurations {
         	    )
         	    .authorizeHttpRequests(authorizeHttpRequests ->
         	        authorizeHttpRequests
-        	            .requestMatchers(HttpMethod.POST, "/login").permitAll()
-        	            .requestMatchers(HttpMethod.POST, "/parametros").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/horas-extras/avaliar-via-link/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/actuator").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/actuator/prometheus").permitAll()
         	            .anyRequest().authenticated()
         	    )
         	    .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

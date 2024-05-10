@@ -37,8 +37,8 @@ public class SolicitarAprovacaoService {
         String baseUrl =
                 ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
 
-        String linkAprovar = baseUrl + "/horas-extras/" + aprovar.getHash();
-        String linkRecusar = baseUrl + "/horas-extras/" + recusar.getHash();
+        String linkAprovar = baseUrl + "/horas-extras/avaliar-via-link/" + aprovar.getId();
+        String linkRecusar = baseUrl + "/horas-extras/avaliar-via-link/" + recusar.getId();
 
         String subject = "Solicitação de aprovação de horas extras";
 

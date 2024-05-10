@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "TB_LINKS")
@@ -19,13 +20,8 @@ import java.time.LocalDateTime;
 public class Link {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TB_LINKS_SEQ")
-    @SequenceGenerator(name = "TB_LINKS_SEQ", sequenceName = "TB_LINKS_SEQ", allocationSize = 1)
     @Column(name = "ID_LINK")
-    private Long id;
-
-    @Column(name = "LINK")
-    private String hash;
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_HORA_EXTRA")
@@ -53,8 +49,8 @@ public class Link {
     @JoinColumn(name = "UPDATE_USER_ID")
     private User updateUser;
 
-    public Link(String hash, HorasExtras horasExtras, AcaoLink acao, User createUser) {
-        this.hash = hash;
+    public Link(HorasExtras horasExtras, AcaoLink acao, User createUser) {
+        this.id = UUID.randomUUID();
         this.horasExtras = horasExtras;
         this.acao = acao;
 
@@ -69,4 +65,8 @@ public class Link {
         this.updateDatetime = LocalDateTime.now();
     }
 
+    public void marcarComoUsado() {
+        this.status = LinkStatus.USADO;
+        this.updateDatetime = LocalDateTime.now();
+    }
 }
