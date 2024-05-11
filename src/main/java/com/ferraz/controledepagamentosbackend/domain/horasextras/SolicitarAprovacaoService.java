@@ -45,7 +45,7 @@ public class SolicitarAprovacaoService {
                         .map(parametro -> "S".equals(parametro.getValor()))
                         .orElse(false);
 
-        if (deveEnviarEmailDeSolicitacaoDeAvaliacao)
+        if (!deveEnviarEmailDeSolicitacaoDeAvaliacao)
             return;
 
         String baseUrl =
