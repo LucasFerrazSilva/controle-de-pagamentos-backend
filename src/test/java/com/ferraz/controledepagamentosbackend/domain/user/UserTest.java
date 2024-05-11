@@ -87,6 +87,23 @@ class UserTest {
         assertThat(equals2).isFalse();
     }
 
+    @Test
+    @DisplayName("deve testar se usuário desativou")
+    void testDeactivateUser(){
+        // Given
+        User user = createUser();
+        User user2 = createUser();
+        user2.setNome("teste_user");
+        user2.setId(99L);
+
+        // when
+        user.deactivate(user2);
+
+        // Then
+        assertThat(user.getStatus()).isEqualTo(UserStatus.INATIVO);
+        assertThat(user.getUpdateUser()).isEqualTo(user2);
+    }
+
     private static User createUser() {
         Long id = 1l;
         String nome = "Usuario";

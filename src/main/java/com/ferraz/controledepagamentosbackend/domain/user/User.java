@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -139,4 +140,10 @@ public class User implements UserDetails {
 			this.perfil = dados.perfil();
 		}
 	}
+
+    public void deactivate(User user){
+        this.setStatus(UserStatus.INATIVO);
+        this.setUpdateUser(user);
+        this.setUpdateDatetime(LocalDateTime.now());
+    }
 }
