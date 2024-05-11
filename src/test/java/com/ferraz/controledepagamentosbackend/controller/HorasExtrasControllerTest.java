@@ -538,7 +538,7 @@ class HorasExtrasControllerTest {
     // tentar avaliar usando link expirado
 
     @Test
-    @DisplayName("Deve retornar 400 (Bad Request) quando tentar avaliar usando link expirado")
+    @DisplayName("Deve retornar 404 (Not Found) quando tentar avaliar usando link expirado")
     void testAvaliarViaLink_LinkExpirado() throws Exception {
         // Given
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
@@ -552,7 +552,7 @@ class HorasExtrasControllerTest {
         HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
 
         Link link = linkRepository.findByHorasExtrasIdAndAcao(horasExtrasDTO.id(), AcaoLink.RECUSAR).get();
-        link.setCreateDatetime(LocalDateTime.now().minusDays(100));
+        link.setStatus(LinkStatus.EXPIRADO);
         linkRepository.save(link);
         requestBuilder = get(ENDPOINT + "/avaliar-via-link/" + link.getId());
 
@@ -560,7 +560,7 @@ class HorasExtrasControllerTest {
         response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(response.getContentAsString()).isNotBlank();
     }
 
