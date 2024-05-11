@@ -38,16 +38,6 @@ class ParametroTest {
     }
 
     @Test
-    void deactivate() {
-        parametro.deactivate(user);
-
-        assertThat(parametro.getStatus()).isEqualTo(ParametroStatus.INATIVO);
-        assertThat(parametro.getUpdateUser()).isEqualTo(user);
-        assertThat(parametro.getCreateDatetime()).isBefore(LocalDateTime.now());
-        assertThat(parametro.getUpdateDatetime()).isBefore(LocalDateTime.now());
-    }
-
-    @Test
     void getStatus() {
         assertThat(parametro.getStatus()).isEqualTo(ParametroStatus.ATIVO);
     }

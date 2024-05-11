@@ -1,14 +1,13 @@
 package com.ferraz.controledepagamentosbackend.domain.parameters;
 
-import com.ferraz.controledepagamentosbackend.domain.parameters.dto.NovoParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
-import com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
+
+import static com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService.getLoggedUser;
 
 @Service
 public class ParametroService {
@@ -20,18 +19,11 @@ public class ParametroService {
 
     public static final NoSuchElementException noSuchElementException = new NoSuchElementException("Parametro não encontrado");
 
-    public Parametro save(NovoParametroDTO novoParametroDTO){
-
-        Parametro parameter = new Parametro(novoParametroDTO, AuthenticationService.getLoggedUser());
-        return parametroRepository.save(parameter);
-
-    }
 
     public Page<Parametro> findAll(Pageable pageable, String nome, String valor, ParametroStatus status){
         return parametroRepository.findByFiltros(pageable, nome, valor, status);
     }
     public Parametro findOne(Long id){
-
         return parametroRepository.findById(id).orElseThrow(() -> noSuchElementException);
     }
 
@@ -39,19 +31,8 @@ public class ParametroService {
         Parametro parametro = parametroRepository.findById(id)
                 .orElseThrow(() -> noSuchElementException);
 
-        parametro.setUpdateUser(AuthenticationService.getLoggedUser());
-        BeanUtils.copyProperties(updateParametroDTO, parametro, "id");
-
+        parametro.update(updateParametroDTO, getLoggedUser());
         return parametroRepository.save(parametro);
-    }
-
-    public void deactivate(Long id){
-        Parametro parametro = parametroRepository.findById(id)
-                .orElseThrow(() -> noSuchElementException);
-
-        parametro.deactivate(AuthenticationService.getLoggedUser());
-        parametroRepository.save(parametro);
-
     }
 
 }

@@ -91,4 +91,9 @@ public class HorasExtras {
         this.updateUser = updateUser;
         this.updateDatetime = LocalDateTime.now();
     }
+
+    public void avaliar(HorasExtrasStatus status) {
+        this.status = status;
+        this.updateDatetime = LocalDateTime.now();
+    }
 }

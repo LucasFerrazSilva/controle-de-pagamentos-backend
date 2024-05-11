@@ -8,6 +8,14 @@ import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStat
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.link.AcaoLink;
+import com.ferraz.controledepagamentosbackend.domain.link.Link;
+import com.ferraz.controledepagamentosbackend.domain.link.LinkRepository;
+import com.ferraz.controledepagamentosbackend.domain.link.LinkStatus;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroStatus;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
@@ -19,7 +27,6 @@ import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -32,7 +39,9 @@ import org.springframework.util.MultiValueMap;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +67,10 @@ class HorasExtrasControllerTest {
     private UserRepository userRepository;
     @Autowired
     private HorasExtrasRepository horasExtrasRepository;
+    @Autowired
+    private LinkRepository linkRepository;
+    @Autowired
+    private ParametroRepository parametroRepository;
 
     private HttpHeaders token;
 
@@ -75,13 +88,14 @@ class HorasExtrasControllerTest {
 
     @BeforeEach
     void beforeEach() {
+        linkRepository.deleteAll();
         horasExtrasRepository.deleteAll();
     }
 
     @AfterAll
     void afterAll() {
+        linkRepository.deleteAll();
         horasExtrasRepository.deleteAll();
-        userRepository.deleteAll();
     }
 
     @Test
@@ -102,6 +116,33 @@ class HorasExtrasControllerTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
         assertThat(response.getContentAsString()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("Deve retornar 200 (OK) quando chamar via POST o endpoint /horas-extras passando dados válidos e deve enviar email com links")
+    void testCreate_ComEnvioDeEmail() throws Exception {
+        // Given
+        Parametro parametro = parametroRepository.findById(Parametros.DEVE_ENVIAR_EMAIL_AVALIACAO.getId()).get();
+        parametro.setValor("S");
+        parametroRepository.save(parametro);
+
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+
+        // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+        assertThat(response.getContentAsString()).isNotBlank();
+
+        parametro.setValor("N");
+        parametroRepository.save(parametro);
     }
 
     @Test
@@ -183,7 +224,7 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 400 (Bad Request) quando chamar via POST o endpoint /horas-extras passando um aprovador que nao tem perfil para aprovar")
     void testCreate_AprovadorNaoTemPerfilNecessario() throws Exception {
         // Given
-        User user = TesteUtils.createUser(userRepository, UsuarioPerfil.ROLE_USER);
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
@@ -395,6 +436,164 @@ class HorasExtrasControllerTest {
         Optional<HorasExtras> optional = horasExtrasRepository.findById(horasExtras.getId());
         assertThat(optional).isPresent();
         assertThat(optional.get().getStatus()).isEqualTo(HorasExtrasStatus.SOLICITADO);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 200 (OK) quando aprovar uma hora extra via link")
+    void testAvaliarViaLink_Aprovar() throws Exception {
+        // Given
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+        HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
+
+        Link link = linkRepository.findByHorasExtrasIdAndAcao(horasExtrasDTO.id(), AcaoLink.APROVAR).get();
+        requestBuilder = get(ENDPOINT + "/avaliar-via-link/" + link.getId());
+
+        // When
+        response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.getContentAsString()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("Deve retornar 200 (OK) quando recusar uma hora extra via link")
+    void testAvaliarViaLink_Recusar() throws Exception {
+        // Given
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+        HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
+
+        Link link = linkRepository.findByHorasExtrasIdAndAcao(horasExtrasDTO.id(), AcaoLink.RECUSAR).get();
+        requestBuilder = get(ENDPOINT + "/avaliar-via-link/" + link.getId());
+
+        // When
+        response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.getContentAsString()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("Deve retornar 404 (Not found) quando tentar avaliar usando um hash invalido")
+    void testAvaliarViaLink_HashInvalido() throws Exception {
+        // Given
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+        HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
+
+        Link link = linkRepository.findByHorasExtrasIdAndAcao(horasExtrasDTO.id(), AcaoLink.RECUSAR).get();
+        requestBuilder = get(ENDPOINT + "/avaliar-via-link/" + UUID.randomUUID());
+
+        // When
+        response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(response.getContentAsString()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 (Bad Request) quando tentar avaliar uma hora extra ja avaliada")
+    void testAvaliarViaLink_HoraExtraJaAvaliada() throws Exception {
+        // Given
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+        HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
+        HorasExtras horasExtras = horasExtrasRepository.findById(horasExtrasDTO.id()).get();
+        horasExtras.setStatus(HorasExtrasStatus.APROVADO);
+        horasExtrasRepository.save(horasExtras);
+
+        Link link = linkRepository.findByHorasExtrasIdAndAcao(horasExtrasDTO.id(), AcaoLink.RECUSAR).get();
+        requestBuilder = get(ENDPOINT + "/avaliar-via-link/" + link.getId());
+
+        // When
+        response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(response.getContentAsString()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("Deve retornar 404 (Not Found) quando tentar avaliar usando link ja utilizado")
+    void testAvaliarViaLink_LinkJaUsado() throws Exception {
+        // Given
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+        HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
+
+        Link link = linkRepository.findByHorasExtrasIdAndAcao(horasExtrasDTO.id(), AcaoLink.RECUSAR).get();
+        link.setStatus(LinkStatus.USADO);
+        linkRepository.save(link);
+        requestBuilder = get(ENDPOINT + "/avaliar-via-link/" + link.getId());
+
+        // When
+        response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(response.getContentAsString()).isNotBlank();
+    }
+    // tentar avaliar usando link expirado
+
+    @Test
+    @DisplayName("Deve retornar 404 (Not Found) quando tentar avaliar usando link expirado")
+    void testAvaliarViaLink_LinkExpirado() throws Exception {
+        // Given
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+        HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
+
+        Link link = linkRepository.findByHorasExtrasIdAndAcao(horasExtrasDTO.id(), AcaoLink.RECUSAR).get();
+        link.setStatus(LinkStatus.EXPIRADO);
+        linkRepository.save(link);
+        requestBuilder = get(ENDPOINT + "/avaliar-via-link/" + link.getId());
+
+        // When
+        response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(response.getContentAsString()).isNotBlank();
     }
 
 }

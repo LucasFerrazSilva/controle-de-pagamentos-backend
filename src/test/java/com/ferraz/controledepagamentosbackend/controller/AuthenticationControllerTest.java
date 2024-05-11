@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
+import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -52,18 +53,7 @@ class AuthenticationControllerTest {
     @BeforeAll
     @Transactional
     void beforeAll() {
-        Long id = 1L;
-        String email = "teste@teste.com";
-        String password = "password";
-        String name = "Nome Teste";
-        this.user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), UsuarioPerfil.ROLE_ADMIN, ATIVO, LocalDateTime.now(), null, null, null);
-        userRepository.save(user);
-    }
-
-    @AfterAll
-    @Transactional
-    void afterAll() {
-        userRepository.deleteAll();
+        user = TesteUtils.createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
     }
 
     @Test
