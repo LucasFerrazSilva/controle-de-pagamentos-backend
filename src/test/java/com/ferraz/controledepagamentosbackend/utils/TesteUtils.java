@@ -6,7 +6,6 @@ import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepo
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
-import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
@@ -32,15 +31,20 @@ public class TesteUtils {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    private static User defaultUser;
+
 
     public static HttpHeaders login(MockMvc mvc, UserRepository userRepository) throws Exception {
-        Long id = 1L;
-        String email = "teste@teste.com";
-        String password = TesteUtils.DEFAULT_PASSWORD;
-        String name = "Nome Teste";
-        User user = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), UsuarioPerfil.ROLE_ADMIN, ATIVO, LocalDateTime.now(), null, null, null);
-        user = userRepository.save(user);
-        return login(mvc, user);
+        if (defaultUser == null) {
+            Long id = 1L;
+            String email = "teste@teste.com";
+            String password = TesteUtils.DEFAULT_PASSWORD;
+            String name = "Nome Teste";
+            defaultUser = new User(id, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), UsuarioPerfil.ROLE_ADMIN, ATIVO, LocalDateTime.now(), null, null, null);
+            userRepository.save(defaultUser);
+        }
+
+        return login(mvc, defaultUser);
     }
 
     public static User createAprovador(UserRepository userRepository) {
@@ -72,26 +76,6 @@ public class TesteUtils {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Authorization", headers);
         return httpHeaders;
-    }
-
-    public static User createUser(UserRepository userRepository) {
-        return createUser(userRepository, UsuarioPerfil.ROLE_ADMIN);
-    }
-
-    
-    public static User createUser(UserRepository userRepository, UsuarioPerfil perfil) {
-    	User user = new User();
-    	user.setNome("Luis");
-    	user.setEmail("test@test.com.br");
-    	user.setSenha(new BCryptPasswordEncoder().encode("1234"));
-    	user.setSalario(new BigDecimal("100.0"));
-    	user.setPerfil(perfil);
-		user.setStatus(UserStatus.ATIVO);
-		user.setCreateDateTime(LocalDateTime.now());
-		user.setUpdateDatetime(null);
-		user.setUpdateUser(null);
-    	userRepository.save(user);
-    	return user;
     }
 
     public static HorasExtras createHorasExtras(User aprovador, HorasExtrasRepository repository) throws Exception {

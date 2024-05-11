@@ -14,6 +14,7 @@ import com.ferraz.controledepagamentosbackend.domain.link.LinkRepository;
 import com.ferraz.controledepagamentosbackend.domain.link.LinkStatus;
 import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
 import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroStatus;
 import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
@@ -95,7 +96,6 @@ class HorasExtrasControllerTest {
     void afterAll() {
         linkRepository.deleteAll();
         horasExtrasRepository.deleteAll();
-        userRepository.deleteAll();
     }
 
     @Test
@@ -224,7 +224,7 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 400 (Bad Request) quando chamar via POST o endpoint /horas-extras passando um aprovador que nao tem perfil para aprovar")
     void testCreate_AprovadorNaoTemPerfilNecessario() throws Exception {
         // Given
-        User user = TesteUtils.createUser(userRepository, UsuarioPerfil.ROLE_USER);
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
