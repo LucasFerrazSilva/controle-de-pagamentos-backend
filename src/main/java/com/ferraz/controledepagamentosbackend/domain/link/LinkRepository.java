@@ -9,4 +9,6 @@ public interface LinkRepository extends JpaRepository<Link, Long> {
 
     Optional<Link> findByIdAndStatus(UUID id, LinkStatus status);
 
+    Optional<Link> findByHorasExtrasIdAndAcao(Long idHorasExtras, AcaoLink acao);
+
 }

@@ -3,6 +3,8 @@ package com.ferraz.controledepagamentosbackend.domain.horasextras;
 import com.ferraz.controledepagamentosbackend.domain.link.AcaoLink;
 import com.ferraz.controledepagamentosbackend.domain.link.Link;
 import com.ferraz.controledepagamentosbackend.domain.link.LinkService;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
 import com.ferraz.controledepagamentosbackend.infra.email.EmailDTO;
 import com.ferraz.controledepagamentosbackend.infra.email.EmailService;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,18 +24,30 @@ public class SolicitarAprovacaoService {
     private String applicationSender;
 
     private final LinkService linkService;
-    private SpringTemplateEngine templateEngine;
-    private EmailService emailService;
+    private final SpringTemplateEngine templateEngine;
+    private final EmailService emailService;
+    private final ParametroRepository parametroRepository;
 
-    public SolicitarAprovacaoService(LinkService linkService, SpringTemplateEngine templateEngine, EmailService emailService) {
+    public SolicitarAprovacaoService(LinkService linkService, SpringTemplateEngine templateEngine, EmailService emailService, ParametroRepository parametroRepository) {
         this.linkService = linkService;
         this.templateEngine = templateEngine;
         this.emailService = emailService;
+        this.parametroRepository = parametroRepository;
     }
 
     public void solicitar(HorasExtras horasExtras) {
         Link aprovar = linkService.criar(AcaoLink.APROVAR, horasExtras);
         Link recusar = linkService.criar(AcaoLink.RECUSAR, horasExtras);
+
+        boolean deveEnviarEmailDeSolicitacaoDeAvaliacao =
+                parametroRepository
+                        .findById(Parametros.DEVE_ENVIAR_EMAIL_AVALIACAO.getId())
+                        .map(parametro -> "S".equals(parametro.getValor()))
+                        .orElse(false);
+
+        if (deveEnviarEmailDeSolicitacaoDeAvaliacao)
+            return;
+
         String baseUrl =
                 ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
 

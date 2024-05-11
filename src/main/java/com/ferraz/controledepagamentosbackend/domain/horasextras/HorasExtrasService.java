@@ -11,7 +11,6 @@ import com.ferraz.controledepagamentosbackend.domain.link.LinkStatus;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
-import com.ferraz.controledepagamentosbackend.infra.exception.ValidationException;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -22,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import static com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService.getLoggedUser;
@@ -104,7 +104,7 @@ public class HorasExtrasService {
     @Transactional
     public Link avaliarViaLink(UUID id) {
         Link link = linkRepository.findByIdAndStatus(id, LinkStatus.CRIADO)
-                .orElseThrow(() -> new ValidationException("hash", "Nenhum registro com status valido foi encontrado para o hash enviado"));
+                .orElseThrow(() -> new NoSuchElementException("Nenhum registro com status valido foi encontrado para o hash enviado"));
         avaliarViaLinkValidators.forEach(validator -> validator.validate(link));
 
         HorasExtras horasExtras = link.getHorasExtras();

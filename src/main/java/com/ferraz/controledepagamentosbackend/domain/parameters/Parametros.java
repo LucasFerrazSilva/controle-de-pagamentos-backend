@@ -1,7 +1,8 @@
 package com.ferraz.controledepagamentosbackend.domain.parameters;
 
 public enum Parametros {
-    TEMPO_EXPIRACAO_LINK(1l);
+    TEMPO_EXPIRACAO_LINK(1l),
+    DEVE_ENVIAR_EMAIL_AVALIACAO(2l);
 
     private Long id;
 

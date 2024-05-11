@@ -98,6 +98,7 @@ public class TesteUtils {
         return createHorasExtras(aprovador, aprovador, repository);
     }
 
+    @Transactional
     public static HorasExtras createHorasExtras(User user, User aprovador, HorasExtrasRepository repository) throws Exception {
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
