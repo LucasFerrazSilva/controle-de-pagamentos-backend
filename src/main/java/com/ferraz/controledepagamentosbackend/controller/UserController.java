@@ -49,7 +49,7 @@ public class UserController {
 	@GetMapping
 	public ResponseEntity<Page<UserDTO>> listar(@PageableDefault Pageable pageable, 
 			@RequestParam(required = false) String nome, @RequestParam(required = false) String email,
-			@RequestParam(required = false) String perfil,@RequestParam(required = false) UserStatus status) {
+			@RequestParam(required = false) UsuarioPerfil perfil,@RequestParam(required = false) UserStatus status) {
 		Page<User> users = userService.listarUsuarios(pageable, nome, email, perfil,status);
 		Page<UserDTO> pageDTO = users.map(UserDTO::new);
 		return ResponseEntity.ok().body(pageDTO);

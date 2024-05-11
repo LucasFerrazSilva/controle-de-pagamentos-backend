@@ -1,7 +1,9 @@
 package com.ferraz.controledepagamentosbackend.domain.user;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
+import com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,7 +46,7 @@ public class UserService {
 		return user;
 	}
 
-	public Page<User> listarUsuarios(Pageable pageable, String nome, String email, String perfil, UserStatus status) {
+	public Page<User> listarUsuarios(Pageable pageable, String nome, String email, UsuarioPerfil perfil, UserStatus status) {
 		return repository.findByFiltros(pageable, nome, email, perfil, status);
 
 	}
@@ -52,7 +54,9 @@ public class UserService {
 	@Transactional
 	public void deletarUsuario(Long id) {
 		deleteUserValidators.forEach(validator -> validator.validate(id));
-		repository.deleteById(id);
+		User user = repository.findById(id).orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+		user.deactivate(AuthenticationService.getLoggedUser());
+		repository.save(user);
 	}
 
 	@Transactional
