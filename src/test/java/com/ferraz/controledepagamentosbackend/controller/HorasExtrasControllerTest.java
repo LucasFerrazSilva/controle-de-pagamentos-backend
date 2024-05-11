@@ -12,6 +12,9 @@ import com.ferraz.controledepagamentosbackend.domain.link.AcaoLink;
 import com.ferraz.controledepagamentosbackend.domain.link.Link;
 import com.ferraz.controledepagamentosbackend.domain.link.LinkRepository;
 import com.ferraz.controledepagamentosbackend.domain.link.LinkStatus;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
@@ -65,6 +68,8 @@ class HorasExtrasControllerTest {
     private HorasExtrasRepository horasExtrasRepository;
     @Autowired
     private LinkRepository linkRepository;
+    @Autowired
+    private ParametroRepository parametroRepository;
 
     private HttpHeaders token;
 
@@ -111,6 +116,33 @@ class HorasExtrasControllerTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
         assertThat(response.getContentAsString()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("Deve retornar 200 (OK) quando chamar via POST o endpoint /horas-extras passando dados válidos e deve enviar email com links")
+    void testCreate_ComEnvioDeEmail() throws Exception {
+        // Given
+        Parametro parametro = parametroRepository.findById(Parametros.DEVE_ENVIAR_EMAIL_AVALIACAO.getId()).get();
+        parametro.setValor("S");
+        parametroRepository.save(parametro);
+
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(4),
+                "Descricao hora extra",
+                aprovador.getId());
+        String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+
+        // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+        assertThat(response.getContentAsString()).isNotBlank();
+
+        parametro.setValor("N");
+        parametroRepository.save(parametro);
     }
 
     @Test

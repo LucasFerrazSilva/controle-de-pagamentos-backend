@@ -33,5 +33,18 @@ class EmailServiceTest {
         // Then
         assertThat(sent).isTrue();
     }
+    @Test
+    @DisplayName("Deve lançar exception ")
+    void testSendMailSMTP_Exception() {
+        // Given
+        EmailDTO emailDTO = new EmailDTO(null, null, null, null);
+
+        // When
+        boolean sent = emailService.sendMailSMTP(emailDTO);
+
+        // Then
+        assertThat(sent).isFalse();
+
+    }
 
 }
