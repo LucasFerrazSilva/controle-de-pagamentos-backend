@@ -25,6 +25,7 @@ public class TokenService {
                 .withSubject(user.getEmail()) // Identifica o usuário
                 .withClaim("id", user.getId()) // Podemos adicionar qualquer informação relevante usando o withClaim
                 .withClaim("name", user.getNome())
+                .withClaim("perfil", user.getPerfil().toString())
                 .withExpiresAt(generateExpirationDate()) // É importante definir um tempo de expiração do token
                 .sign(Algorithm.HMAC256(secret));
     }
