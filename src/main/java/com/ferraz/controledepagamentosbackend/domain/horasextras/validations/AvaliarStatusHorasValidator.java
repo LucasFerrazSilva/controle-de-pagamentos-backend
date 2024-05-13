@@ -4,26 +4,26 @@ import org.springframework.stereotype.Component;
 
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AvaliarHorasDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import com.ferraz.controledepagamentosbackend.infra.exception.ValidationException;
 
 @Component
-public class AvaliarRolesValidator implements AvaliarHorasValidator{
+public class AvaliarStatusHorasValidator implements AvaliarHorasValidator{
 
 	private HorasExtrasRepository extrasRepository;
 	
-	public AvaliarRolesValidator(HorasExtrasRepository extrasRepository) {
+	public AvaliarStatusHorasValidator(HorasExtrasRepository extrasRepository) {
 		this.extrasRepository = extrasRepository;
 	}
-	
 	@Override
 	public void validate(AvaliarHorasDTO dto) {
 		HorasExtras hora = extrasRepository.findById(dto.id()).orElseThrow();
 		
-		if(hora.getAprovador().getPerfil() != UsuarioPerfil.ROLE_GESTOR) {
-			throw new ValidationException("Perfil", "O Usuario aprovador deve ser um Gestor.");
+		if(hora.getStatus().equals(HorasExtrasStatus.APROVADO) || hora.getStatus().equals(HorasExtrasStatus.RECUSADO)) {
+			throw new ValidationException("Status", "A hora não pode ser aprovada ou recusada");
 		}
+		
 	}
 
 }

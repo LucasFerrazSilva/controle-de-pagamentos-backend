@@ -47,7 +47,7 @@ public class TesteUtils {
         String email = "aprovador@mail.com";
         String password = TesteUtils.DEFAULT_PASSWORD;
         String name = "Nome Aprovador";
-        User user = new User(null, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), UsuarioPerfil.ROLE_ADMIN, ATIVO, LocalDateTime.now(), null, null, null);
+        User user = new User(null, name, email, new BCryptPasswordEncoder().encode(password), new BigDecimal("123"), UsuarioPerfil.ROLE_GESTOR, ATIVO, LocalDateTime.now(), null, null, null);
         return userRepository.save(user);
     }
 
@@ -98,6 +98,7 @@ public class TesteUtils {
         return createHorasExtras(aprovador, aprovador, repository);
     }
 
+    @Transactional
     public static HorasExtras createHorasExtras(User user, User aprovador, HorasExtrasRepository repository) throws Exception {
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),

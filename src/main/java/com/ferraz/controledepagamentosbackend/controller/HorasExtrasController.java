@@ -73,8 +73,8 @@ public class HorasExtrasController {
     @PostMapping("/avaliar-horas")
     public ResponseEntity<Object> avaliarHoras(@RequestBody @Valid AvaliarHorasDTO dados){
     	HorasExtras hora = service.avaliarHora(dados);
-		return null;
-    	
+    	HorasExtrasDTO horasDTO = new HorasExtrasDTO(hora);
+		return ResponseEntity.ok(horasDTO);
     }
 
 

@@ -103,8 +103,10 @@ public class HorasExtrasService {
 	public HorasExtras avaliarHora(AvaliarHorasDTO dados) {
     	avaliarHorasValidators.forEach(validator -> validator.validate(dados));
 		HorasExtras hora = repository.findById(dados.id()).orElseThrow();
-		User aprovador = userRepository.findById(hora.getAprovador().getId()).orElseThrow();
-		
+		hora.setStatus(dados.status());
+		hora.setUpdateDatetime(LocalDateTime.now());
+		hora.setUpdateUser(getLoggedUser());
+		repository.save(hora);
 		return hora;
 	}
 
