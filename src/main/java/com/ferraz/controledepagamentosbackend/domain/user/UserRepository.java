@@ -28,6 +28,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 		       "AND (:perfil IS NULL OR u.perfil = :perfil) " +
 		       "AND (:status IS NULL OR u.status = :status)")
 	Page<User> findByFiltros(Pageable page, 
-			@Param("nome") String nome, @Param("email") String email, @Param("perfil")String perfil,
+			@Param("nome") String nome, @Param("email") String email, @Param("perfil")UsuarioPerfil perfil,
 			@Param("status")UserStatus status);
 }

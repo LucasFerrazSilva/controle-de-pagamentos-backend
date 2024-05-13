@@ -2,17 +2,16 @@ package com.ferraz.controledepagamentosbackend.controller;
 
 import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
 import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroService;
-import com.ferraz.controledepagamentosbackend.domain.parameters.dto.NovoParametroDTO;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroStatus;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.ParametroDTO;
 import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/parametros")
@@ -25,25 +24,16 @@ public class ParametroController {
     }
 
 
-    @PostMapping
-    public ResponseEntity<Object> create(@RequestBody @Valid NovoParametroDTO novoParametroDTO){
-        Parametro novoParametro = parametroService.save(novoParametroDTO);
-
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(novoParametro.getId())
-                .toUri();
-
-        ParametroDTO parametroDTO = new ParametroDTO(novoParametro);
-
-        return ResponseEntity.created(location).body(parametroDTO);
-    }
 
     @GetMapping
-    public ResponseEntity<List<ParametroDTO>> getAll(){
-        List<Parametro> parametros = parametroService.findAll();
-        List<ParametroDTO> parametrosDTO = parametros.stream().map(ParametroDTO::new).toList();
+    public ResponseEntity<Page<ParametroDTO>> getAll(
+            @PageableDefault Pageable pageable,
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String valor,
+            @RequestParam(required = false) ParametroStatus status
+            ){
+        Page<Parametro> parametros = parametroService.findAll(pageable, nome, valor, status);
+        Page<ParametroDTO> parametrosDTO = parametros.map(ParametroDTO::new);
         return ResponseEntity.status(HttpStatus.OK).body(parametrosDTO);
     }
 
@@ -59,12 +49,6 @@ public class ParametroController {
         Parametro parametro = parametroService.update(id, updateParametroDTO);
         ParametroDTO updatedParametroDTO = new ParametroDTO(parametro);
         return ResponseEntity.status(HttpStatus.OK).body(updatedParametroDTO);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable(value = "id") Long id){
-        parametroService.deactivate(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

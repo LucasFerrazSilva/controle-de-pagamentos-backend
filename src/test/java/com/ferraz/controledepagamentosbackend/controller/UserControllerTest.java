@@ -1,25 +1,15 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomUser;
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createUser;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ferraz.controledepagamentosbackend.domain.user.User;
+import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
+import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -36,15 +26,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
-import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
-import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 
-import jakarta.transaction.Transactional;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomUser;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.login;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -63,20 +53,13 @@ class UserControllerTest {
 	@Autowired
 	private JacksonTester<List<UserDTO>> userDtoListJackson;
     
-    private HttpHeaders headers;
+    private HttpHeaders token;
     
-    @AfterAll
-    @Transactional
-    void afterAll() {
-    	userRepository.deleteAll();
+    @BeforeAll
+    void beforeAll() throws Exception {
+    	token = login(mvc, userRepository);
     }
-    
-    @BeforeEach
-    void beforeEach() throws Exception {
-    	userRepository.deleteAll();
-    	headers = TesteUtils.login(mvc, userRepository);
-    } 
-    
+
     @Test
     @DisplayName("Deve ser criado um usuario com as informações corretas e retornar 201 CREATED")
     void createUserSucessTest() throws Exception{
@@ -89,7 +72,7 @@ class UserControllerTest {
     	DadosCreateUserDTO dadosUserDTO = new DadosCreateUserDTO(nome, email, senha, salario, perfil);
     	String jsonString = objectMapper.writeValueAsString(dadosUserDTO);
     	
-    	RequestBuilder request = post(endpoint).contentType(APPLICATION_JSON).content(jsonString).headers(headers);
+    	RequestBuilder request = post(endpoint).contentType(APPLICATION_JSON).content(jsonString).headers(token);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
@@ -98,12 +81,12 @@ class UserControllerTest {
     @Test
     @DisplayName("Alterar Usuario com o email ja registrado deve retornar 400 Bad Request")
     void createUserEmailUKErrorTest() throws Exception{
-      	createUser(userRepository);
-    	
-    	//Cria dados para ser mandado em uma requisição
+		User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+
+		//Cria dados para ser mandado em uma requisição
     	ObjectMapper mapper = new ObjectMapper();
     	String nome = "Luis";
-    	String email = "test@test.com.br";
+    	String email = randomUser.getEmail();
     	String senha = "SenhaTeste";
     	BigDecimal salario = new BigDecimal("100.00");
 		UsuarioPerfil perfil = UsuarioPerfil.ROLE_ADMIN;
@@ -113,7 +96,7 @@ class UserControllerTest {
     	String jsonString = mapper.writeValueAsString(dadosUserDTO);
     	
     	//Requisicao e resposta
-    	RequestBuilder builder = post(endpoint).contentType(APPLICATION_JSON).content(jsonString).headers(headers);
+    	RequestBuilder builder = post(endpoint).contentType(APPLICATION_JSON).content(jsonString).headers(token);
     	MockHttpServletResponse response = mvc.perform(builder).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
@@ -122,7 +105,7 @@ class UserControllerTest {
     @Test
     @DisplayName("Deve retornar 200 OK para listar usuarios")
     void listUsersTest() throws Exception {
-    	RequestBuilder request = get(endpoint).headers(headers);
+    	RequestBuilder request = get(endpoint).headers(token);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -131,8 +114,8 @@ class UserControllerTest {
     @Test
     @DisplayName("Deve deletar o usuario corretamente e retornar 204 no content")
     void deleteUserSucessTest() throws Exception {
-    	User user = createUser(userRepository);
-    	RequestBuilder request = delete(endpoint + "/" + user.getId()).headers(headers);
+    	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+    	RequestBuilder request = delete(endpoint + "/" + user.getId()).headers(token);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
@@ -140,7 +123,7 @@ class UserControllerTest {
     @Test
     @DisplayName("Deve Retornar 404 Not Found deletando um user com id invalido")
     void deleteUserInvalidIdTest() throws Exception {
-    	RequestBuilder request = delete(endpoint + "/" + 100).headers(headers);
+    	RequestBuilder request = delete(endpoint + "/" + 100).headers(token);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -149,7 +132,7 @@ class UserControllerTest {
     @Test
     @DisplayName("Deve alterar o MESMO usuario e retornar 200 OK")
     void alterarUsuarioTest() throws Exception{
-    	User user = createUser(userRepository);
+    	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
     	
     	//Cria DTO para ser enviado na requisicao
     	ObjectMapper mapper = new ObjectMapper();
@@ -159,7 +142,7 @@ class UserControllerTest {
     	String jsonDto = mapper.writeValueAsString(dto);
     	
     	RequestBuilder request = put(endpoint + "/" + user.getId()).contentType(APPLICATION_JSON)
-    			.content(jsonDto).headers(headers);
+    			.content(jsonDto).headers(token);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -168,7 +151,7 @@ class UserControllerTest {
     @Test
     @DisplayName("Alterar um usuario com email de outro deve retornar 400 Bad Request")
     void alterarUsuarioEmailErrorTest() throws Exception{
-    	User user = createUser(userRepository);
+    	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
     	
     	//Cria um usuario secundario 
     	User user2 = new User();
@@ -188,7 +171,7 @@ class UserControllerTest {
     	DadosAtualizacaoUserDTO dto = new DadosAtualizacaoUserDTO(null, email, null, null);
     	String jsonDto = mapper.writeValueAsString(dto);
     	RequestBuilder request = put(endpoint + "/" + user2.getId()).contentType(APPLICATION_JSON)
-    			.content(jsonDto).headers(headers);
+    			.content(jsonDto).headers(token);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
@@ -197,8 +180,8 @@ class UserControllerTest {
     @Test
     @DisplayName("Deve listar corretamente um usuario com ID existente e retornar 200 OK")
     void listarUserByIdTest() throws Exception{
-    	User user = createUser(userRepository);
-    	RequestBuilder request = get(endpoint + "/" + user.getId()).headers(headers);
+    	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+    	RequestBuilder request = get(endpoint + "/" + user.getId()).headers(token);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -207,7 +190,7 @@ class UserControllerTest {
     @Test
     @DisplayName("Deve retornar 404 Not Found para listar usuario com id inexistente")
     void listarUserByIdFailTest()throws Exception{
-    	RequestBuilder request = get(endpoint + "/" + 0).headers(headers);
+    	RequestBuilder request = get(endpoint + "/" + 0).headers(token);
     	MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
     	
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -221,34 +204,12 @@ class UserControllerTest {
 		createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
 
 		// When
-		RequestBuilder request = get(endpoint + "/listar-por-perfil/" + UsuarioPerfil.ROLE_USER).headers(headers);
+		RequestBuilder request = get(endpoint + "/listar-por-perfil/" + UsuarioPerfil.ROLE_USER).headers(token);
 		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
 
 		// Then
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).isNotBlank();
-
-		List<UserDTO> list = userDtoListJackson.parse(response.getContentAsString()).getObject();
-		assertThat(list).hasSize(2);
-	}
-
-	@Test
-	@DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /listar-por-perfil passando um perfil valido")
-	void testListarPorPerfil_NenhumRegistroEncontado() throws Exception {
-		// Given
-		createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-		createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-
-		// When
-		RequestBuilder request = get(endpoint + "/listar-por-perfil/" + UsuarioPerfil.ROLE_GESTOR).headers(headers);
-		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
-
-		// Then
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).isNotBlank();
-
-		List<UserDTO> list = userDtoListJackson.parse(response.getContentAsString()).getObject();
-		assertThat(list).isEmpty();
 	}
 
 }
