@@ -14,7 +14,7 @@ public interface HorasExtrasRepository extends JpaRepository<HorasExtras, Long> 
     @Query("select he from HorasExtras he where" +
             " (:idUsuario is null or :idUsuario = he.user.id)" +
             " and (:idAprovador is null or :idAprovador = he.aprovador.id)" +
-            " and (:descricao is null or he.descricao like CONCAT('%',  cast(:descricao AS text), '%'))" +
+            " and (:descricao is null or UPPER(he.descricao) like CONCAT('%',  UPPER(cast(:descricao AS text)), '%'))" +
             " and (:status is null or :status = he.status)"
     )
     Page<HorasExtras> findByFiltros(Pageable pageable, @Param("idUsuario") Long idUsuario,
