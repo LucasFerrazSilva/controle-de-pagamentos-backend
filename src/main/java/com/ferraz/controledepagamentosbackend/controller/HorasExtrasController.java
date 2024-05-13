@@ -4,6 +4,7 @@ import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasService;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AvaliarHorasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.link.AcaoLink;
@@ -70,6 +71,13 @@ public class HorasExtrasController {
     public ResponseEntity<Object> delete(@PathVariable("id") Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+    
+    @PostMapping("/avaliar-horas")
+    public ResponseEntity<Object> avaliarHoras(@RequestBody @Valid AvaliarHorasDTO dados){
+    	HorasExtras hora = service.avaliarHora(dados);
+    	HorasExtrasDTO horasDTO = new HorasExtrasDTO(hora);
+		return ResponseEntity.ok(horasDTO);
     }
 
     @GetMapping("/avaliar-via-link/{hash}")

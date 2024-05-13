@@ -1,27 +1,27 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
-import com.ferraz.controledepagamentosbackend.domain.link.AcaoLink;
-import com.ferraz.controledepagamentosbackend.domain.link.Link;
-import com.ferraz.controledepagamentosbackend.domain.link.LinkRepository;
-import com.ferraz.controledepagamentosbackend.domain.link.LinkStatus;
-import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
-import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
-import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroStatus;
-import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
-import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
-import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
-import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.*;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createHorasExtras;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomUser;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.login;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -36,17 +36,28 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AvaliarHorasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.link.AcaoLink;
+import com.ferraz.controledepagamentosbackend.domain.link.Link;
+import com.ferraz.controledepagamentosbackend.domain.link.LinkRepository;
+import com.ferraz.controledepagamentosbackend.domain.link.LinkStatus;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
+import com.ferraz.controledepagamentosbackend.domain.user.User;
+import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
+import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import jakarta.transaction.Transactional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -64,9 +75,12 @@ class HorasExtrasControllerTest {
     @Autowired
     private JacksonTester<HorasExtrasDTO> horasExtrasDTOJacksonTester;
     @Autowired
+    private JacksonTester<AvaliarHorasDTO> avaliarHorasDTOJacksonTester;
+    @Autowired
     private UserRepository userRepository;
     @Autowired
     private HorasExtrasRepository horasExtrasRepository;
+
     @Autowired
     private LinkRepository linkRepository;
     @Autowired
@@ -437,8 +451,122 @@ class HorasExtrasControllerTest {
         assertThat(optional).isPresent();
         assertThat(optional.get().getStatus()).isEqualTo(HorasExtrasStatus.SOLICITADO);
     }
+    
+    @Test
+    @DisplayName("Deve ser aceito para aprovação/Recusa de horas apenas as Horas com o status Solicitada")
+    void horasSolicitadasTest() throws Exception{
+    	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+    	User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
+    	
+    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	
+    	AvaliarHorasDTO avaliarHorasDTO = new AvaliarHorasDTO(horasExtras.getId(), HorasExtrasStatus.APROVADO);
+    	String dto = avaliarHorasDTOJacksonTester.write(avaliarHorasDTO).getJson();
+    	
+    	RequestBuilder requestBuilder = post(ENDPOINT + "/" + "avaliar-horas").
+    			contentType(APPLICATION_JSON).content(dto).headers(login);
+    	MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+    	
+    	assertThat(horasExtras.getStatus()).isEqualTo(HorasExtrasStatus.SOLICITADO);
+    	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+    }
+    
+    @Test
+    @DisplayName("Se hora diferente de Solicitada retornar 400 Bad Request")
+    void horasDiferenteDeSolicitadaTest() throws Exception{
+    	User user = createRandomUser(userRepository , UsuarioPerfil.ROLE_USER);
+    	User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
+    	
+    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	horasExtras.setStatus(HorasExtrasStatus.APROVADO);
+    	horasExtrasRepository.save(horasExtras);
+    	
+    	AvaliarHorasDTO avaliarHorasDTO = new AvaliarHorasDTO(horasExtras.getId(), HorasExtrasStatus.APROVADO);
+    	String dto = avaliarHorasDTOJacksonTester.write(avaliarHorasDTO).getJson();
+    	
+    	RequestBuilder requestBuilder = post(ENDPOINT + "/" + "avaliar-horas").
+    			contentType(APPLICATION_JSON).content(dto).headers(login);
+    	MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+    	
+    	assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+    
 
     @Test
+    @DisplayName("A unica Role aprovadora de Horas extras deve ser a de Gestor")
+    void horasSolicitadasRoleGestorTest() throws Exception {
+    	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_ADMIN);
+    	User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
+    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	
+    	AvaliarHorasDTO avaliarHorasDTO = new AvaliarHorasDTO(horasExtras.getId(), HorasExtrasStatus.APROVADO);
+    	String dto = avaliarHorasDTOJacksonTester.write(avaliarHorasDTO).getJson();
+    	
+    	RequestBuilder requestBuilder = post(ENDPOINT + "/" + "avaliar-horas").
+    			contentType(APPLICATION_JSON).content(dto).headers(login);
+    	MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+    	
+    	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+    }
+    
+    @Test
+    @DisplayName("Se role Diferente de Gestor deve retornar 400 Bad Request")
+    void horasSolicitadasRoleDiferenteDeGestorTest() throws Exception {
+    	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_ADMIN);
+    	User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
+    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	
+    	AvaliarHorasDTO avaliarHorasDTO = new AvaliarHorasDTO(horasExtras.getId(), HorasExtrasStatus.APROVADO);
+    	String dto = avaliarHorasDTOJacksonTester.write(avaliarHorasDTO).getJson();
+    	
+    	RequestBuilder requestBuilder = post(ENDPOINT + "/" + "avaliar-horas").
+    			contentType(APPLICATION_JSON).content(dto).headers(login);
+    	MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+    	
+    	assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+    
+    @Test
+    @DisplayName("Se o usuario aprovador for diferente do solicitador retornar 200 ok")
+    void userAprovadorDiferenteTest() throws Exception{
+    	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_ADMIN);
+    	User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
+    	
+    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	AvaliarHorasDTO avaliarHorasDTO = new AvaliarHorasDTO(horasExtras.getId(), HorasExtrasStatus.APROVADO);
+    	String dto = avaliarHorasDTOJacksonTester.write(avaliarHorasDTO).getJson();
+    	
+    	RequestBuilder requestBuilder = post(ENDPOINT + "/" + "avaliar-horas").
+    			contentType(APPLICATION_JSON).content(dto).headers(login);
+    	MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+    	
+    	assertThat(horasExtras.getAprovador().getId()).isNotEqualTo(user.getId());
+    	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+    }
+    
+    @Test
+    @DisplayName("Se o usuario aprovador for IGUAL do solicitador retornar 400 BAD REQUEST")
+    void userDiferenteTest() throws Exception{
+    	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+    	User aprovador = user;
+    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
+    	
+    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	AvaliarHorasDTO avaliarHorasDTO = new AvaliarHorasDTO(horasExtras.getId(), HorasExtrasStatus.APROVADO);
+    	String dto = avaliarHorasDTOJacksonTester.write(avaliarHorasDTO).getJson();
+    	
+    	RequestBuilder requestBuilder = post(ENDPOINT + "/" + "avaliar-horas").
+    			contentType(APPLICATION_JSON).content(dto).headers(login);
+    	MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+    	
+    	assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
     @DisplayName("Deve retornar 200 (OK) quando aprovar uma hora extra via link")
     void testAvaliarViaLink_Aprovar() throws Exception {
         // Given
