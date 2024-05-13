@@ -1,5 +1,41 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createHorasExtras;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomUser;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.login;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
@@ -15,41 +51,13 @@ import com.ferraz.controledepagamentosbackend.domain.link.LinkRepository;
 import com.ferraz.controledepagamentosbackend.domain.link.LinkStatus;
 import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
 import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
-import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroStatus;
 import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
+
 import jakarta.transaction.Transactional;
-
-import org.apache.catalina.startup.ClassLoaderFactory.Repository;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.json.JacksonTester;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.RequestBuilder;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -460,7 +468,7 @@ class HorasExtrasControllerTest {
     			contentType(APPLICATION_JSON).content(dto).headers(login);
     	MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
     	
-    	assertThat(horasExtras.getStatus().equals(HorasExtrasStatus.SOLICITADO));
+    	assertThat(horasExtras.getStatus()).isEqualTo(HorasExtrasStatus.SOLICITADO);
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
     }
     
@@ -715,6 +723,5 @@ class HorasExtrasControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(response.getContentAsString()).isNotBlank();
     }
-
 
 }
