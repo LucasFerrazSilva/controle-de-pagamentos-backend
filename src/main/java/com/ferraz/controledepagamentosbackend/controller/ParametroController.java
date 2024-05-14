@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,7 +23,6 @@ public class ParametroController {
     public ParametroController(ParametroService parametroService) {
         this.parametroService = parametroService;
     }
-
 
 
     @GetMapping
@@ -45,6 +45,7 @@ public class ParametroController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('GESTOR') || hasRole('ADMIN') || hasRole('FINANCEIRO')")
     public ResponseEntity<Object> update(@PathVariable(value = "id") Long id, @RequestBody @Valid UpdateParametroDTO updateParametroDTO){
         Parametro parametro = parametroService.update(id, updateParametroDTO);
         ParametroDTO updatedParametroDTO = new ParametroDTO(parametro);
