@@ -23,8 +23,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	
 	
 	@Query("SELECT u FROM User u " +
-		       "WHERE (:nome IS NULL OR u.nome = :nome) " +
-		       "AND (:email IS NULL OR u.email = :email) " +
+		       "WHERE (:nome IS NULL OR UPPER(u.nome) like CONCAT('%', UPPER(cast(:nome AS text)),'%')) " +
+		       "AND (:email IS NULL OR UPPER(u.email) like CONCAT('%', UPPER(cast(:email AS text)),'%')) " +
 		       "AND (:perfil IS NULL OR u.perfil = :perfil) " +
 		       "AND (:status IS NULL OR u.status = :status)")
 	Page<User> findByFiltros(Pageable page, 
