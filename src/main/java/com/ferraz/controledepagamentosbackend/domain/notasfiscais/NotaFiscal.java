@@ -1,6 +1,8 @@
 package com.ferraz.controledepagamentosbackend.domain.notasfiscais;
 
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
+import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.AtualizarNotaFiscalDTO;
+import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -28,20 +30,20 @@ public class NotaFiscal {
     @JoinColumn(name = "ID_USUARIO")
     private User user;
 
-    @Column(name = "mes")
+    @Column(name = "MES")
     private Integer mes;
 
-    @Column(name = "ano")
+    @Column(name = "ANO")
     private Integer ano;
 
-    @Column(name = "valor")
+    @Column(name = "VALOR")
     private BigDecimal valor;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS")
     private NotaFiscalStatus status;
 
-    @Column(name = "file_path")
+    @Column(name = "FILE_PATH")
     private String filePath;
 
     @Column(name = "CREATE_DATETIME")
@@ -58,5 +60,35 @@ public class NotaFiscal {
     @JoinColumn(name = "UPDATE_USER_ID")
     private User updateUser;
 
+    public NotaFiscal(NovaNotaFiscalDTO dto, User user){
+        this.mes = dto.mes();
+        this.ano = dto.ano();
+        this.valor = dto.valor();
+        this.status = dto.status();
+        this.filePath = dto.filePath();
+
+        this.createDatetime = LocalDateTime.now();
+        this.createUser = user;
+        this.user = user;
+    }
+
+    public void update(AtualizarNotaFiscalDTO dto, User user){
+        this.mes = dto.mes();
+        this.ano = dto.ano();
+        this.valor = dto.valor();
+
+        update(user);
+    }
+
+    public void deactivate(User user){
+        this.status = NotaFiscalStatus.INATIVA;
+
+        update(user);
+    }
+
+    public void update(User user){
+        this.updateDatetime = LocalDateTime.now();
+        this.updateUser = user;
+    }
 
 }

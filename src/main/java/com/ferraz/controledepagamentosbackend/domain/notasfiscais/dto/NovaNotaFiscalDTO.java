@@ -10,6 +10,6 @@ public record NovaNotaFiscalDTO(
         Integer ano,
         BigDecimal valor,
         String filePath,
-        NotaFiscalStatus notaFiscalStatus
+        NotaFiscalStatus status
 ) {
 }

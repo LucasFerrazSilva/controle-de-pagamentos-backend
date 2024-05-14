@@ -12,7 +12,7 @@ public record NotaFiscalDTO(
         Integer ano,
         BigDecimal valor,
         String filePath,
-        NotaFiscalStatus notaFiscalStatus
+        NotaFiscalStatus status
         ) {
     public NotaFiscalDTO(NotaFiscal notaFiscal){
         this (
