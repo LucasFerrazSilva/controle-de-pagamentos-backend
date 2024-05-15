@@ -36,26 +36,22 @@ public class SolicitarAprovacaoService {
     }
 
     public void solicitar(HorasExtras horasExtras) {
-        Link aprovar = linkService.criar(AcaoLink.APROVAR, horasExtras);
-        Link recusar = linkService.criar(AcaoLink.RECUSAR, horasExtras);
+        linkService.inativarLinks(horasExtras);
 
-        boolean deveEnviarEmailDeSolicitacaoDeAvaliacao =
-                parametroRepository
-                        .findById(Parametros.DEVE_ENVIAR_EMAIL_AVALIACAO.getId())
-                        .map(parametro -> "S".equals(parametro.getValor()))
-                        .orElse(false);
+        String linkAprovar = createAndBuildLink(AcaoLink.APROVAR, horasExtras);
+        String linkRecusar = createAndBuildLink(AcaoLink.RECUSAR, horasExtras);
 
-        if (!deveEnviarEmailDeSolicitacaoDeAvaliacao)
+        if (!deveEnviarEmailDeSolicitacaoDeAvaliacao())
             return;
 
-        String baseUrl =
-                ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-
-        String linkAprovar = baseUrl + "/horas-extras/avaliar-via-link/" + aprovar.getId();
-        String linkRecusar = baseUrl + "/horas-extras/avaliar-via-link/" + recusar.getId();
-
+        String html = buildHtml(horasExtras, linkAprovar, linkRecusar);
         String subject = "Solicitação de aprovação de horas extras";
+        EmailDTO emailDTO = new EmailDTO(applicationSender, horasExtras.getAprovador().getEmail(), subject, html);
+        this.emailService.sendMailSMTP(emailDTO);
+    }
 
+
+    private String buildHtml(HorasExtras horasExtras, String linkAprovar, String linkRecusar) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
         Map<String, Object> variables = new HashMap<>();
@@ -68,12 +64,21 @@ public class SolicitarAprovacaoService {
         variables.put("descricao", horasExtras.getDescricao());
         Context context = new Context();
         context.setVariables(variables);
-        String html = templateEngine.process("solicitacao-de-analise.html", context);
 
-        EmailDTO emailDTO = new EmailDTO(applicationSender, horasExtras.getAprovador().getEmail(), subject, html);
+        return templateEngine.process("solicitacao-de-analise.html", context);
+    }
 
-        this.emailService.sendMailSMTP(emailDTO);
+    private String createAndBuildLink(AcaoLink acaoLink, HorasExtras horasExtras) {
+        Link link = linkService.criar(acaoLink, horasExtras);
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        return "%s/horas-extras/avaliar-via-link/%s".formatted(baseUrl, link.getId());
+    }
 
+    private boolean deveEnviarEmailDeSolicitacaoDeAvaliacao() {
+        return parametroRepository
+                        .findById(Parametros.DEVE_ENVIAR_EMAIL_AVALIACAO.getId())
+                        .map(parametro -> "S".equals(parametro.getValor()))
+                        .orElse(false);
     }
 
 }
