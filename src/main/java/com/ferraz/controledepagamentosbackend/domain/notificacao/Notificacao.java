@@ -51,4 +51,13 @@ public class Notificacao {
     @JoinColumn(name = "UPDATE_USER_ID")
     private User updateUser;
 
+    public Notificacao(User user, String descricao, String path, User loggedUser) {
+        this.user = user;
+        this.descricao = descricao;
+        this.path = path;
+        this.createUser = loggedUser;
+
+        this.status = NotificacaoStatus.CRIADA;
+        this.createDatetime = LocalDateTime.now();
+    }
 }

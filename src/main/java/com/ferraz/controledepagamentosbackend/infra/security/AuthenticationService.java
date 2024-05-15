@@ -26,7 +26,7 @@ public class AuthenticationService implements UserDetailsService {
 
     public static User getLoggedUser(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (User) authentication.getPrincipal();
+        return authentication != null ? (User) authentication.getPrincipal() : null;
     }
 
 }
