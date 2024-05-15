@@ -8,7 +8,9 @@ import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalStat
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.AtualizarNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFiscalDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
@@ -72,8 +74,9 @@ class NotaFiscalControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via POST o endpoint /notas-fiscais passando dados válidos")
     void testCreate() throws Exception {
         // Given
+        User user = TesteUtils.createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
         NovaNotaFiscalDTO dto = new NovaNotaFiscalDTO(
-                1L,
+                user.getId(),
                 4,
                 2024,
                 BigDecimal.valueOf(2000.00),
