@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -74,6 +75,7 @@ public class HorasExtrasController {
     }
     
     @PostMapping("/avaliar-horas")
+    @PreAuthorize("hasRole('GESTOR')")
     public ResponseEntity<Object> avaliarHoras(@RequestBody @Valid AvaliarHorasDTO dados){
     	HorasExtras hora = service.avaliarHora(dados);
     	HorasExtrasDTO horasDTO = new HorasExtrasDTO(hora);

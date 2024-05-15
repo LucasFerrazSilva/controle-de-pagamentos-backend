@@ -513,7 +513,7 @@ class HorasExtrasControllerTest {
     }
     
     @Test
-    @DisplayName("Se role Diferente de Gestor deve retornar 400 Bad Request")
+    @DisplayName("Se role Diferente de Gestor deve retornar 403 Forbidden")
     void horasSolicitadasRoleDiferenteDeGestorTest() throws Exception {
     	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_ADMIN);
     	User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
@@ -527,7 +527,7 @@ class HorasExtrasControllerTest {
     			contentType(APPLICATION_JSON).content(dto).headers(login);
     	MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
     	
-    	assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    	assertThat(response.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
     
     @Test
