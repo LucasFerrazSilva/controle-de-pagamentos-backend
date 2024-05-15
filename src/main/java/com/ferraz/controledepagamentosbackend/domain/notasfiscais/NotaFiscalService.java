@@ -46,6 +46,7 @@ public class NotaFiscalService {
     public NotaFiscal update(Long id, AtualizarNotaFiscalDTO dto){
         atualizarNotasFiscaisValidators.forEach(validator -> validator.validate(id, dto));
         NotaFiscal notaFiscal = repository.findById(id).orElseThrow();
+        notaFiscal.update(dto, getLoggedUser());
         repository.save(notaFiscal);
 
         return notaFiscal;

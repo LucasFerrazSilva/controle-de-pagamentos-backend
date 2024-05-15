@@ -1,6 +1,5 @@
 package com.ferraz.controledepagamentosbackend.domain.notasfiscais;
 
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.AtualizarNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
@@ -76,6 +75,8 @@ public class NotaFiscal {
         this.mes = dto.mes();
         this.ano = dto.ano();
         this.valor = dto.valor();
+        this.status = dto.status();
+        this.filePath = dto.filePath();
 
         update(user);
     }
