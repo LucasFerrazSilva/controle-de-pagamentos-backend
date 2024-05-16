@@ -9,7 +9,6 @@ public record AtualizarNotaFiscalDTO(
         Integer mes,
         Integer ano,
         BigDecimal valor,
-        String filePath,
-        NotaFiscalStatus status
+        String filePath
 ) {
 }
