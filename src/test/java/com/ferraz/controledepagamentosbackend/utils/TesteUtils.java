@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscal;
+import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalRepository;
+import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
@@ -78,8 +81,17 @@ public class TesteUtils {
         return httpHeaders;
     }
 
-    public static HorasExtras createHorasExtras(User aprovador, HorasExtrasRepository repository) throws Exception {
-        return createHorasExtras(aprovador, aprovador, repository);
+    @Transactional
+    public static NotaFiscal createNotaFiscal(User user, NotaFiscalRepository repository){
+        NovaNotaFiscalDTO dto = new NovaNotaFiscalDTO(
+                user.getId(),
+                LocalDateTime.now().getMonthValue(),
+                LocalDateTime.now().getYear(),
+                BigDecimal.valueOf(2000),
+                "TEST"
+        );
+        NotaFiscal notaFiscal = new NotaFiscal(dto, user);
+        return repository.save(notaFiscal);
     }
 
     @Transactional
