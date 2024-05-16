@@ -472,6 +472,9 @@ class HorasExtrasControllerTest {
     	
     	assertThat(horasExtras.getStatus()).isEqualTo(HorasExtrasStatus.SOLICITADO);
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+        List<Notificacao> notificacaoList = notificacaoRepository.findByUserAndStatusNot(user, NotificacaoStatus.INATIVA);
+        assertThat(notificacaoList).hasSize(1);
     }
     
     @Test
@@ -569,16 +572,19 @@ class HorasExtrasControllerTest {
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
+    @Test
     @DisplayName("Deve retornar 200 (OK) quando aprovar uma hora extra via link")
     void testAvaliarViaLink_Aprovar() throws Exception {
         // Given
+        User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        HttpHeaders randomUserToken = login(mvc, randomUser);
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
                 "Descricao hora extra",
                 aprovador.getId());
         String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
-        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(randomUserToken);
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
         HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
 
@@ -591,19 +597,24 @@ class HorasExtrasControllerTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.getContentAsString()).isNotBlank();
+
+        List<Notificacao> notificacaoList = notificacaoRepository.findByUserAndStatusNot(randomUser, NotificacaoStatus.INATIVA);
+        assertThat(notificacaoList).hasSize(1);
     }
 
     @Test
     @DisplayName("Deve retornar 200 (OK) quando recusar uma hora extra via link")
     void testAvaliarViaLink_Recusar() throws Exception {
         // Given
+        User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        HttpHeaders randomUserToken = login(mvc, randomUser);
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
                 "Descricao hora extra",
                 aprovador.getId());
         String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
-        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(randomUserToken);
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
         HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
 
@@ -616,6 +627,9 @@ class HorasExtrasControllerTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.getContentAsString()).isNotBlank();
+
+        List<Notificacao> notificacaoList = notificacaoRepository.findByUserAndStatusNot(randomUser, NotificacaoStatus.INATIVA);
+        assertThat(notificacaoList).hasSize(1);
     }
 
     @Test

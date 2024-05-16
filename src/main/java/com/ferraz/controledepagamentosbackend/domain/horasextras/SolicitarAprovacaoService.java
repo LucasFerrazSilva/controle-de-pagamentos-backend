@@ -61,7 +61,7 @@ public class SolicitarAprovacaoService {
     private void criarNotificacao(HorasExtras horasExtras) {
         String solicitante = horasExtras.getUser().getNome();
         String dataSolicitacao = horasExtras.getDataHoraInicio().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        String descricao = "%s Silva solicitou aprovação para horas extras realizadas no dia %s".formatted(solicitante, dataSolicitacao);
+        String descricao = "%s solicitou aprovação para horas extras realizadas no dia %s".formatted(solicitante, dataSolicitacao);
         notificacaoService.create(horasExtras.getAprovador(), descricao, "/horas-extras");
     }
 
