@@ -6,6 +6,7 @@ import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalStat
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.AtualizarNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFiscalDTO;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -27,7 +28,7 @@ public class NotaFiscalController {
     }
 
     @PostMapping
-    public ResponseEntity<NotaFiscalDTO> create(@RequestBody NovaNotaFiscalDTO dto, UriComponentsBuilder uriComponentsBuilder){
+    public ResponseEntity<NotaFiscalDTO> create(@RequestBody @Valid NovaNotaFiscalDTO dto, UriComponentsBuilder uriComponentsBuilder){
         NotaFiscal notaFiscal = service.create(dto);
         NotaFiscalDTO notaFiscalDTO = new NotaFiscalDTO(notaFiscal);
         URI uri = uriComponentsBuilder.path("/notas-fiscais/{id}").buildAndExpand(notaFiscal.getId()).toUri();
@@ -36,11 +37,11 @@ public class NotaFiscalController {
 
     @GetMapping
     public ResponseEntity<Page<NotaFiscalDTO>> list(
-            @PageableDefault Pageable pageable, @RequestParam(required = false) Integer mes,
+            @PageableDefault Pageable pageable, @RequestParam(required = false) Integer mes, @RequestParam(required = false) Long idUsuario,
             @RequestParam(required = false) Integer ano, @RequestParam(required = false) BigDecimal valor,
             @RequestParam(required = false) NotaFiscalStatus status){
 
-        Page<NotaFiscal> page = this.service.list(pageable, mes, ano, valor, status);
+        Page<NotaFiscal> page = this.service.list(pageable, idUsuario, mes, ano, valor, status);
 
         Page<NotaFiscalDTO> pageDTO = page.map(NotaFiscalDTO::new);
         return ResponseEntity.ok(pageDTO);
@@ -54,7 +55,7 @@ public class NotaFiscalController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<NotaFiscalDTO> update(@PathVariable("id") Long id, @RequestBody AtualizarNotaFiscalDTO dto){
+    public ResponseEntity<NotaFiscalDTO> update(@PathVariable("id") Long id, @RequestBody @Valid AtualizarNotaFiscalDTO dto){
         NotaFiscal notaFiscal = service.update(id, dto);
         NotaFiscalDTO notaFiscalDTO = new NotaFiscalDTO(notaFiscal);
 

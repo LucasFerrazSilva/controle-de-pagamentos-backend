@@ -22,7 +22,7 @@ public class NotaFiscal {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TB_NOTAS_FISCAIS_SEQ")
     @SequenceGenerator(name = "TB_NOTAS_FISCAIS_SEQ", sequenceName = "TB_NOTAS_FISCAIS_SEQ", allocationSize = 1)
-    @Column(name = "ID_NOTAS_FISCAIS")
+    @Column(name = "ID_NOTA_FISCAL")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

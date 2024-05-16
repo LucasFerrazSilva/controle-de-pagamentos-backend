@@ -35,14 +35,15 @@ public class NotaFiscalService {
         return notaFiscal;
     }
 
-    public Page<NotaFiscal> list(Pageable pageable, Integer mes, Integer ano, BigDecimal valor, NotaFiscalStatus status){
-        return repository.findByFiltros(pageable, mes, ano, valor, status);
+    public Page<NotaFiscal> list(Pageable pageable, Long idUsuario, Integer mes, Integer ano, BigDecimal valor, NotaFiscalStatus status){
+        return repository.findByFiltros(pageable, idUsuario , mes, ano, valor, status);
     }
 
     public NotaFiscal findById(Long id){
         return repository.findById(id).orElseThrow();
     }
 
+    @Transactional
     public NotaFiscal update(Long id, AtualizarNotaFiscalDTO dto){
         atualizarNotasFiscaisValidators.forEach(validator -> validator.validate(id, dto));
         NotaFiscal notaFiscal = repository.findById(id).orElseThrow();
