@@ -53,6 +53,7 @@ public class NotaFiscalService {
         return notaFiscal;
     }
 
+    @Transactional
     public void delete(Long id){
         NotaFiscal notaFiscal = repository.findById(id).orElseThrow();
         notaFiscal.deactivate(getLoggedUser());
