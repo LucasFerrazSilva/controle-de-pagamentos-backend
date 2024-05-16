@@ -1,7 +1,5 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscal;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalService;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalStatus;

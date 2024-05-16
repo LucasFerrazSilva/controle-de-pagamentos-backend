@@ -1,7 +1,4 @@
 package com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto;
-
-import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalStatus;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 

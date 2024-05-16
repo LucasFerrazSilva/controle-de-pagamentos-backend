@@ -6,7 +6,6 @@ import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepo
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscal;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalRepository;
-import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalStatus;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;

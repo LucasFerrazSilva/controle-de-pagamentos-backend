@@ -1,16 +1,9 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscal;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalRepository;
-import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalService;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalStatus;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.AtualizarNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NotaFiscalDTO;
@@ -18,7 +11,6 @@ import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFi
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
-import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,22 +24,16 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Optional;
 
 import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 @SpringBootTest
 @AutoConfigureMockMvc
