@@ -47,7 +47,8 @@ public class SolicitarAprovacaoService {
         String html = buildHtml(horasExtras, linkAprovar, linkRecusar);
         String subject = "Solicitação de aprovação de horas extras";
         EmailDTO emailDTO = new EmailDTO(applicationSender, horasExtras.getAprovador().getEmail(), subject, html);
-        this.emailService.sendMailSMTP(emailDTO);
+        
+        new Thread(() -> this.emailService.sendMailSMTP(emailDTO)).start();
     }
 
 
