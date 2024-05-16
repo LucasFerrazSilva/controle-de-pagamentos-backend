@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.notificacao.Notificacao;
+import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoService;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
@@ -91,6 +93,12 @@ public class TesteUtils {
                 aprovador.getId());
         HorasExtras horasExtras = new HorasExtras(dto, user, aprovador);
         return repository.save(horasExtras);
+    }
+
+    public static Notificacao criarNotificacao(User user, NotificacaoService notificacaoService) {
+        String descricao = "Aprovador X aprovou a sua hora extra do dia 20/05/2024";
+        String path = "/horas-extras";
+        return notificacaoService.create(user, descricao, path);
     }
 
 }

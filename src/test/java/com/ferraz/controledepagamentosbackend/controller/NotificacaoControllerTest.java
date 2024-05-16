@@ -1,12 +1,15 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.Notificacao;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoRepository;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoService;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoStatus;
+import com.ferraz.controledepagamentosbackend.domain.notificacao.dto.NotificacaoDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
+import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -14,10 +17,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.RequestBuilder;
 
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomUser;
+import java.util.List;
+
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -27,11 +39,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 class NotificacaoControllerTest {
 
     @Autowired
+    private MockMvc mvc;
+    @Autowired
     private NotificacaoService notificacaoService;
     @Autowired
     private NotificacaoRepository notificacaoRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private JacksonTester<List<NotificacaoDTO>> notificaoListJackson;
+
+    private static final String ENDPOINT = "/notificacoes";
 
     @Test
     @DisplayName("Deve criar uma notificação quando passar dados válidos")
@@ -57,12 +75,23 @@ class NotificacaoControllerTest {
 
     @Test
     @DisplayName("Deve retornar lista de notificacoes quando usuario informado possuir notificacoes")
-    void testListarPorUsuario() {
+    void testListarPorUsuario() throws Exception {
         // Given
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        HttpHeaders token = login(mvc, user);
+        Notificacao notificacao1 = criarNotificacao(user, notificacaoService);
+        Notificacao notificacao2 = criarNotificacao(user, notificacaoService);
+        RequestBuilder requestBuilder = get(ENDPOINT).headers(token);
 
         // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        List<NotificacaoDTO> list = notificaoListJackson.parse(response.getContentAsString()).getObject();
+        assertThat(list).hasSize(2);
+        assertThat(list).contains(new NotificacaoDTO(notificacao1));
+        assertThat(list).contains(new NotificacaoDTO(notificacao2));
     }
 
     @Test
