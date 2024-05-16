@@ -1,6 +1,5 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.Notificacao;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoRepository;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoService;
@@ -9,7 +8,6 @@ import com.ferraz.controledepagamentosbackend.domain.notificacao.dto.Notificacao
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
-import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -30,6 +28,7 @@ import java.util.List;
 import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -81,27 +80,39 @@ class NotificacaoControllerTest {
         HttpHeaders token = login(mvc, user);
         Notificacao notificacao1 = criarNotificacao(user, notificacaoService);
         Notificacao notificacao2 = criarNotificacao(user, notificacaoService);
-        RequestBuilder requestBuilder = get(ENDPOINT).headers(token);
+        RequestBuilder request = get(ENDPOINT).headers(token);
 
         // When
-        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+        MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         List<NotificacaoDTO> list = notificaoListJackson.parse(response.getContentAsString()).getObject();
-        assertThat(list).hasSize(2);
-        assertThat(list).contains(new NotificacaoDTO(notificacao1));
-        assertThat(list).contains(new NotificacaoDTO(notificacao2));
+        assertThat(list)
+                .hasSize(2)
+                .contains(new NotificacaoDTO(notificacao1))
+                .contains(new NotificacaoDTO(notificacao2));
     }
 
     @Test
     @DisplayName("Deve marcar notificacao como visualizada quando passar dados validos")
-    void testMarcarNotificacaoComoVisualizada() {
+    void testMarcarNotificacaoComoVisualizada() throws Exception {
         // Given
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        HttpHeaders token = login(mvc, user);
+        criarNotificacao(user, notificacaoService);
+        criarNotificacao(user, notificacaoService);
+        RequestBuilder request = post(ENDPOINT + "/marcar-como-visualizadas").headers(token);
 
         // When
+        MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
 
         // Then
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+        List<Notificacao> notificacoes = notificacaoRepository.findByUserAndStatusNot(user, NotificacaoStatus.INATIVA);
+        assertThat(notificacoes).hasSize(2);
+        notificacoes.forEach(notificacao -> assertThat(notificacao.getStatus()).isEqualTo(NotificacaoStatus.VISUALIZADA));
     }
 
 }

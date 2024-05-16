@@ -60,4 +60,10 @@ public class Notificacao {
         this.status = NotificacaoStatus.CRIADA;
         this.createDatetime = LocalDateTime.now();
     }
+
+    public void marcarComoVisualizada(User user) {
+        this.status = NotificacaoStatus.VISUALIZADA;
+        this.updateDatetime = LocalDateTime.now();
+        this.updateUser = user;
+    }
 }

@@ -1,7 +1,6 @@
 package com.ferraz.controledepagamentosbackend.domain.notificacao;
 
 import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -27,4 +26,12 @@ public class NotificacaoService {
     public List<Notificacao> listByLoggedUser() {
         return repository.findByUserAndStatusNot(getLoggedUser(), NotificacaoStatus.INATIVA);
     }
+
+    @Transactional
+    public void marcarComoVisualizadas() {
+        List<Notificacao> notificacoes = listByLoggedUser();
+        notificacoes.forEach(notificacao -> notificacao.marcarComoVisualizada(getLoggedUser()));
+        repository.saveAll(notificacoes);
+    }
+
 }
