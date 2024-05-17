@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroStatus;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -141,8 +142,17 @@ public class User implements UserDetails {
 		}
 	}
 
+    public void mudarSenha(String encondedPassword, User user){
+        this.setSenha(encondedPassword);
+        update(user);
+    }
+
     public void deactivate(User user){
         this.setStatus(UserStatus.INATIVO);
+        update(user);
+    }
+
+    public void update(User user){
         this.setUpdateUser(user);
         this.setUpdateDatetime(LocalDateTime.now());
     }

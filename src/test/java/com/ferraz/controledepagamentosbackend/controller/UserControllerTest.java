@@ -7,6 +7,7 @@ import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -53,7 +55,13 @@ class UserControllerTest {
 	private JacksonTester<List<UserDTO>> userDtoListJackson;
     
     private HttpHeaders token;
-    
+
+	@Autowired
+	private JacksonTester<NovaSenhaDTO> novaSenhaDTOJacksonTester;
+
+	@Autowired
+	private PasswordEncoder encoder;
+
     @BeforeAll
     void beforeAll() throws Exception {
     	token = login(mvc, userRepository);
@@ -209,6 +217,24 @@ class UserControllerTest {
 		// Then
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).isNotBlank();
+	}
+
+	@Test
+	@DisplayName("Deve mudar a senha de um usuário")
+	void testMudarSenha() throws Exception {
+		// Given
+		User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+		String novaSenha = "nova_senha";
+		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha);
+		String jsonDto = novaSenhaDTOJacksonTester.write(dto).getJson();
+		RequestBuilder request = get(endpoint + "/mudar-senha/" + user.getId()).contentType(APPLICATION_JSON)
+				.content(jsonDto).headers(token);
+
+		// When
+		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
+
+		// Then
+		assertThat(user.getSenha()).isEqualTo(encoder.encode(novaSenha));
 	}
 
 }

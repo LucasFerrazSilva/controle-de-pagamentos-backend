@@ -6,6 +6,7 @@ import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -75,4 +76,13 @@ public class UserController {
 		UserDTO dto = new UserDTO(user);
 		return ResponseEntity.ok().body(dto);
 	}
+
+	@PutMapping("/mudar-senha/{id}")
+	public ResponseEntity<UserDTO> mudarSenha(@PathVariable Long id, @RequestBody @Valid NovaSenhaDTO dto){
+		User user = userService.mudarSenha(id, dto);
+		UserDTO userDTO = new UserDTO(user);
+
+		return ResponseEntity.ok(userDTO);
+	}
+
 }
