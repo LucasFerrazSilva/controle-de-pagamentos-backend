@@ -95,11 +95,24 @@ public class TesteUtils {
     }
 
     @Transactional
-    public static HorasExtras createHorasExtras(User user, User aprovador, HorasExtrasRepository repository) throws Exception {
+    public static HorasExtras createHorasExtras(User user, User aprovador, HorasExtrasRepository repository) {
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
                 "Descricao hora extra",
+                aprovador.getId());
+        HorasExtras horasExtras = new HorasExtras(dto, user, aprovador);
+        return repository.save(horasExtras);
+    }
+
+    @Transactional
+    public static HorasExtras createRandomHorasExtras(User user, User aprovador, HorasExtrasRepository repository) {
+        int randomOffset = new Random().nextInt(1000);
+        int randomQuantidadeDeHoras = new Random().nextInt(11) + 1;
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now().plusHours(randomOffset),
+                LocalDateTime.now().plusHours(randomOffset + randomQuantidadeDeHoras),
+                "Descricao hora extra " + randomOffset,
                 aprovador.getId());
         HorasExtras horasExtras = new HorasExtras(dto, user, aprovador);
         return repository.save(horasExtras);
