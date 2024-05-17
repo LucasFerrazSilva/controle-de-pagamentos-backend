@@ -105,7 +105,7 @@ class NotaFiscalControllerTest {
     void list() throws Exception {
         // Given
         User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-        createNotaFiscal(user, notaFiscalRepository);
+        createNotaFiscal(user, user, notaFiscalRepository);
         RequestBuilder requestBuilder = get(ENDPOINT).queryParam("status", NotaFiscalStatus.SOLICITADA.toString()).headers(token);
 
         // When
@@ -121,7 +121,7 @@ class NotaFiscalControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /notas-fiscais passando um id válido")
     void findById() throws Exception {
         User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-        NotaFiscal notaFiscal = createNotaFiscal(user, notaFiscalRepository);
+        NotaFiscal notaFiscal = createNotaFiscal(user, user, notaFiscalRepository);
         RequestBuilder requestBuilder = get(ENDPOINT + "/" + notaFiscal.getId()).headers(token);
 
         // When
@@ -140,7 +140,7 @@ class NotaFiscalControllerTest {
 
         // Given
         User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-        NotaFiscal notaFiscal = createNotaFiscal(user, notaFiscalRepository);
+        NotaFiscal notaFiscal = createNotaFiscal(user, user, notaFiscalRepository);
         BigDecimal novoValor = notaFiscal.getValor().add(BigDecimal.valueOf(1000));
         String novoCaminho = "novo_caminho";
         AtualizarNotaFiscalDTO dto = new AtualizarNotaFiscalDTO(
@@ -172,7 +172,7 @@ class NotaFiscalControllerTest {
     void deleteTest() throws Exception {
         // Given
         User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-        NotaFiscal notaFiscal = createNotaFiscal(user, notaFiscalRepository);
+        NotaFiscal notaFiscal = createNotaFiscal(user, user, notaFiscalRepository);
         RequestBuilder requestBuilder = delete(ENDPOINT + "/" + notaFiscal.getId()).headers(token);
 
         // When

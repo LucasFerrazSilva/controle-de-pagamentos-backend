@@ -14,7 +14,7 @@ public interface NotaFiscalRepository extends JpaRepository<NotaFiscal, Long> {
             "WHERE (:idUsuario is null or :idUsuario = nf.user.id) " +
             "AND (:mes IS NULL OR nf.mes = :mes) " +
             "AND (:ano IS NULL OR nf.ano = :ano) " +
-            "AND (:valor IS NULL OR nf.valor = :valor) " +
+            "AND (:valor IS NULL OR nf.valor > :valor) " +
             "AND (:status IS NULL OR nf.status = :status)")
     Page<NotaFiscal> findByFiltros(
             Pageable pageable,

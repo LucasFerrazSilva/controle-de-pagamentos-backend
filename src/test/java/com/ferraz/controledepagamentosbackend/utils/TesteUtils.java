@@ -82,7 +82,7 @@ public class TesteUtils {
     }
 
     @Transactional
-    public static NotaFiscal createNotaFiscal(User user, NotaFiscalRepository repository){
+    public static NotaFiscal createNotaFiscal(User createUser, User user, NotaFiscalRepository repository){
         NovaNotaFiscalDTO dto = new NovaNotaFiscalDTO(
                 user.getId(),
                 LocalDateTime.now().getMonthValue(),
@@ -90,7 +90,7 @@ public class TesteUtils {
                 BigDecimal.valueOf(2000),
                 "TEST"
         );
-        NotaFiscal notaFiscal = new NotaFiscal(dto, user);
+        NotaFiscal notaFiscal = new NotaFiscal(dto, createUser, user);
         return repository.save(notaFiscal);
     }
 
