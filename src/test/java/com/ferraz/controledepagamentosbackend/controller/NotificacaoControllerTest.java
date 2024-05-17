@@ -110,7 +110,7 @@ class NotificacaoControllerTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 
-        List<Notificacao> notificacoes = notificacaoRepository.findByUserAndStatusNot(user, NotificacaoStatus.INATIVA);
+        List<Notificacao> notificacoes = notificacaoRepository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(user, NotificacaoStatus.INATIVA);
         assertThat(notificacoes).hasSize(2);
         notificacoes.forEach(notificacao -> assertThat(notificacao.getStatus()).isEqualTo(NotificacaoStatus.VISUALIZADA));
     }

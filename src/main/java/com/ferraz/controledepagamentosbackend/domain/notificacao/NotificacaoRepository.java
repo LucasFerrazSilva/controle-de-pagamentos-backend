@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface NotificacaoRepository extends JpaRepository<Notificacao, Long> {
 
-    List<Notificacao> findByUserAndStatusNot(User user, NotificacaoStatus status);
+    List<Notificacao> findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(User user, NotificacaoStatus status);
 
 }

@@ -24,7 +24,7 @@ public class NotificacaoService {
     }
 
     public List<Notificacao> listByLoggedUser() {
-        return repository.findByUserAndStatusNot(getLoggedUser(), NotificacaoStatus.INATIVA);
+        return repository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(getLoggedUser(), NotificacaoStatus.INATIVA);
     }
 
     @Transactional

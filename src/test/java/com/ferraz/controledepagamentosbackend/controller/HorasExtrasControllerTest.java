@@ -127,7 +127,7 @@ class HorasExtrasControllerTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
         assertThat(response.getContentAsString()).isNotBlank();
-        List<Notificacao> notificacoes = notificacaoRepository.findByUserAndStatusNot(aprovador, NotificacaoStatus.INATIVA);
+        List<Notificacao> notificacoes = notificacaoRepository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(aprovador, NotificacaoStatus.INATIVA);
         assertThat(notificacoes).isNotEmpty();
     }
 
@@ -372,7 +372,7 @@ class HorasExtrasControllerTest {
         assertThat(responseDTO.descricao()).isEqualTo(dto.descricao());
         assertThat(responseDTO.aprovador().id()).isEqualTo(dto.idAprovador());
 
-        List<Notificacao> notificacoes = notificacaoRepository.findByUserAndStatusNot(randomUser, NotificacaoStatus.INATIVA);
+        List<Notificacao> notificacoes = notificacaoRepository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(randomUser, NotificacaoStatus.INATIVA);
         assertThat(notificacoes).isNotEmpty();
     }
 
@@ -473,7 +473,7 @@ class HorasExtrasControllerTest {
     	assertThat(horasExtras.getStatus()).isEqualTo(HorasExtrasStatus.SOLICITADO);
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 
-        List<Notificacao> notificacaoList = notificacaoRepository.findByUserAndStatusNot(user, NotificacaoStatus.INATIVA);
+        List<Notificacao> notificacaoList = notificacaoRepository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(user, NotificacaoStatus.INATIVA);
         assertThat(notificacaoList).hasSize(1);
     }
     
@@ -598,7 +598,7 @@ class HorasExtrasControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.getContentAsString()).isNotBlank();
 
-        List<Notificacao> notificacaoList = notificacaoRepository.findByUserAndStatusNot(randomUser, NotificacaoStatus.INATIVA);
+        List<Notificacao> notificacaoList = notificacaoRepository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(randomUser, NotificacaoStatus.INATIVA);
         assertThat(notificacaoList).hasSize(1);
     }
 
@@ -628,7 +628,7 @@ class HorasExtrasControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.getContentAsString()).isNotBlank();
 
-        List<Notificacao> notificacaoList = notificacaoRepository.findByUserAndStatusNot(randomUser, NotificacaoStatus.INATIVA);
+        List<Notificacao> notificacaoList = notificacaoRepository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(randomUser, NotificacaoStatus.INATIVA);
         assertThat(notificacaoList).hasSize(1);
     }
 
