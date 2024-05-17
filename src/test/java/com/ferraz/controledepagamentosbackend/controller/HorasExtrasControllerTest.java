@@ -1,27 +1,30 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createHorasExtras;
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomUser;
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.login;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AvaliarHorasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
+import com.ferraz.controledepagamentosbackend.domain.link.AcaoLink;
+import com.ferraz.controledepagamentosbackend.domain.link.Link;
+import com.ferraz.controledepagamentosbackend.domain.link.LinkRepository;
+import com.ferraz.controledepagamentosbackend.domain.link.LinkStatus;
+import com.ferraz.controledepagamentosbackend.domain.notificacao.Notificacao;
+import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoRepository;
+import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoStatus;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
+import com.ferraz.controledepagamentosbackend.domain.user.User;
+import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
+import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -36,28 +39,17 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AtualizarHorasExtrasDTO;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.AvaliarHorasDTO;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.HorasExtrasDTO;
-import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
-import com.ferraz.controledepagamentosbackend.domain.link.AcaoLink;
-import com.ferraz.controledepagamentosbackend.domain.link.Link;
-import com.ferraz.controledepagamentosbackend.domain.link.LinkRepository;
-import com.ferraz.controledepagamentosbackend.domain.link.LinkStatus;
-import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
-import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
-import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
-import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
-import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
-import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-import jakarta.transaction.Transactional;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -85,6 +77,8 @@ class HorasExtrasControllerTest {
     private LinkRepository linkRepository;
     @Autowired
     private ParametroRepository parametroRepository;
+    @Autowired
+    private NotificacaoRepository notificacaoRepository;
 
     private HttpHeaders token;
 
@@ -102,12 +96,15 @@ class HorasExtrasControllerTest {
 
     @BeforeEach
     void beforeEach() {
-        linkRepository.deleteAll();
-        horasExtrasRepository.deleteAll();
+        clear();
     }
 
     @AfterAll
     void afterAll() {
+        clear();
+    }
+
+    void clear() {
         linkRepository.deleteAll();
         horasExtrasRepository.deleteAll();
     }
@@ -130,6 +127,8 @@ class HorasExtrasControllerTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
         assertThat(response.getContentAsString()).isNotBlank();
+        List<Notificacao> notificacoes = notificacaoRepository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(aprovador, NotificacaoStatus.INATIVA);
+        assertThat(notificacoes).isNotEmpty();
     }
 
     @Test
@@ -282,10 +281,10 @@ class HorasExtrasControllerTest {
         createHorasExtras(user1, aprovador, horasExtrasRepository);
         createHorasExtras(user2, aprovador, horasExtrasRepository);
 
-        HttpHeaders token = login(mvc, user1);
+        HttpHeaders tokenUser1 = login(mvc, user1);
 
         // When
-        RequestBuilder requestBuilder = get(ENDPOINT).queryParam("status", HorasExtrasStatus.SOLICITADO.toString()).headers(token);
+        RequestBuilder requestBuilder = get(ENDPOINT).queryParam("status", HorasExtrasStatus.SOLICITADO.toString()).headers(tokenUser1);
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
 
         // Then
@@ -376,6 +375,9 @@ class HorasExtrasControllerTest {
         assertThat(responseDTO.dataHoraFim()).isEqualTo(dto.dataHoraFim());
         assertThat(responseDTO.descricao()).isEqualTo(dto.descricao());
         assertThat(responseDTO.aprovador().id()).isEqualTo(dto.idAprovador());
+
+        List<Notificacao> notificacoes = notificacaoRepository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(randomUser, NotificacaoStatus.INATIVA);
+        assertThat(notificacoes).isNotEmpty();
     }
 
     @Test
@@ -462,10 +464,10 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve ser aceito para aprovação/Recusa de horas apenas as Horas com o status Solicitada")
     void horasSolicitadasTest() throws Exception{
     	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-    	User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
-    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
+    	User gestor = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+    	HttpHeaders login = TesteUtils.login(mvc, gestor);
     	
-    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	HorasExtras horasExtras = createHorasExtras(user, gestor, horasExtrasRepository);
     	
     	AvaliarHorasDTO avaliarHorasDTO = new AvaliarHorasDTO(horasExtras.getId(), HorasExtrasStatus.APROVADO);
     	String dto = avaliarHorasDTOJacksonTester.write(avaliarHorasDTO).getJson();
@@ -476,16 +478,19 @@ class HorasExtrasControllerTest {
     	
     	assertThat(horasExtras.getStatus()).isEqualTo(HorasExtrasStatus.SOLICITADO);
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+        List<Notificacao> notificacaoList = notificacaoRepository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(user, NotificacaoStatus.INATIVA);
+        assertThat(notificacaoList).hasSize(1);
     }
     
     @Test
     @DisplayName("Se hora diferente de Solicitada retornar 400 Bad Request")
     void horasDiferenteDeSolicitadaTest() throws Exception{
     	User user = createRandomUser(userRepository , UsuarioPerfil.ROLE_USER);
-    	User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
-    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
+    	User gestor = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+    	HttpHeaders login = TesteUtils.login(mvc, gestor);
     	
-    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	HorasExtras horasExtras = createHorasExtras(user, gestor, horasExtrasRepository);
     	horasExtras.setStatus(HorasExtrasStatus.APROVADO);
     	horasExtrasRepository.save(horasExtras);
     	
@@ -504,9 +509,9 @@ class HorasExtrasControllerTest {
     @DisplayName("A unica Role aprovadora de Horas extras deve ser a de Gestor")
     void horasSolicitadasRoleGestorTest() throws Exception {
     	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_ADMIN);
-    	User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
-    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
-    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	User gestor = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+    	HttpHeaders login = TesteUtils.login(mvc, gestor);
+    	HorasExtras horasExtras = createHorasExtras(user, gestor, horasExtrasRepository);
     	
     	AvaliarHorasDTO avaliarHorasDTO = new AvaliarHorasDTO(horasExtras.getId(), HorasExtrasStatus.APROVADO);
     	String dto = avaliarHorasDTOJacksonTester.write(avaliarHorasDTO).getJson();
@@ -522,9 +527,9 @@ class HorasExtrasControllerTest {
     @DisplayName("Se role Diferente de Gestor deve retornar 403 Forbidden")
     void horasSolicitadasRoleDiferenteDeGestorTest() throws Exception {
     	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_ADMIN);
-    	User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
-    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	User gestor = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+    	HttpHeaders login = TesteUtils.login(mvc, gestor);
+    	HorasExtras horasExtras = createHorasExtras(user, gestor, horasExtrasRepository);
     	
     	AvaliarHorasDTO avaliarHorasDTO = new AvaliarHorasDTO(horasExtras.getId(), HorasExtrasStatus.APROVADO);
     	String dto = avaliarHorasDTOJacksonTester.write(avaliarHorasDTO).getJson();
@@ -540,10 +545,10 @@ class HorasExtrasControllerTest {
     @DisplayName("Se o usuario aprovador for diferente do solicitador retornar 200 ok")
     void userAprovadorDiferenteTest() throws Exception{
     	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_ADMIN);
-    	User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
-    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
+    	User gestor = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+    	HttpHeaders login = TesteUtils.login(mvc, gestor);
     	
-    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	HorasExtras horasExtras = createHorasExtras(user, gestor, horasExtrasRepository);
     	AvaliarHorasDTO avaliarHorasDTO = new AvaliarHorasDTO(horasExtras.getId(), HorasExtrasStatus.APROVADO);
     	String dto = avaliarHorasDTOJacksonTester.write(avaliarHorasDTO).getJson();
     	
@@ -559,10 +564,10 @@ class HorasExtrasControllerTest {
     @DisplayName("Se o usuario aprovador for IGUAL do solicitador retornar 400 BAD REQUEST")
     void userDiferenteTest() throws Exception{
     	User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
-    	User aprovador = user;
-    	HttpHeaders login = TesteUtils.login(mvc, aprovador);
+    	User gestor = user;
+    	HttpHeaders login = TesteUtils.login(mvc, gestor);
     	
-    	HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
+    	HorasExtras horasExtras = createHorasExtras(user, gestor, horasExtrasRepository);
     	AvaliarHorasDTO avaliarHorasDTO = new AvaliarHorasDTO(horasExtras.getId(), HorasExtrasStatus.APROVADO);
     	String dto = avaliarHorasDTOJacksonTester.write(avaliarHorasDTO).getJson();
     	
@@ -573,16 +578,19 @@ class HorasExtrasControllerTest {
     	assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
+    @Test
     @DisplayName("Deve retornar 200 (OK) quando aprovar uma hora extra via link")
     void testAvaliarViaLink_Aprovar() throws Exception {
         // Given
+        User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        HttpHeaders randomUserToken = login(mvc, randomUser);
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
                 "Descricao hora extra",
                 aprovador.getId());
         String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
-        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(randomUserToken);
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
         HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
 
@@ -595,19 +603,24 @@ class HorasExtrasControllerTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.getContentAsString()).isNotBlank();
+
+        List<Notificacao> notificacaoList = notificacaoRepository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(randomUser, NotificacaoStatus.INATIVA);
+        assertThat(notificacaoList).hasSize(1);
     }
 
     @Test
     @DisplayName("Deve retornar 200 (OK) quando recusar uma hora extra via link")
     void testAvaliarViaLink_Recusar() throws Exception {
         // Given
+        User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        HttpHeaders randomUserToken = login(mvc, randomUser);
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
                 "Descricao hora extra",
                 aprovador.getId());
         String dadosValidos = novasHorasExtrasDTOJacksonTester.write(dto).getJson();
-        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
+        RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(randomUserToken);
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
         HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
 
@@ -620,6 +633,9 @@ class HorasExtrasControllerTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.getContentAsString()).isNotBlank();
+
+        List<Notificacao> notificacaoList = notificacaoRepository.findTop5ByUserAndStatusNotOrderByCreateDatetimeDesc(randomUser, NotificacaoStatus.INATIVA);
+        assertThat(notificacaoList).hasSize(1);
     }
 
     @Test
@@ -636,7 +652,7 @@ class HorasExtrasControllerTest {
         MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
         HorasExtrasDTO horasExtrasDTO = horasExtrasDTOJacksonTester.parse(response.getContentAsString()).getObject();
 
-        Link link = linkRepository.findByHorasExtrasIdAndAcao(horasExtrasDTO.id(), AcaoLink.RECUSAR).get();
+        linkRepository.findByHorasExtrasIdAndAcao(horasExtrasDTO.id(), AcaoLink.RECUSAR).get();
         requestBuilder = get(ENDPOINT + "/avaliar-via-link/" + UUID.randomUUID());
 
         // When
