@@ -258,7 +258,8 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras")
     void testList() throws Exception {
         // Given
-        createHorasExtras(aprovador, horasExtrasRepository);
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        createHorasExtras(user, aprovador, horasExtrasRepository);
         RequestBuilder requestBuilder = get(ENDPOINT).queryParam("status", HorasExtrasStatus.SOLICITADO.toString()).headers(token);
 
         // When
@@ -296,7 +297,8 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras")
     void testList_ComDatas() throws Exception {
         // Given
-        createHorasExtras(aprovador, horasExtrasRepository);
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        createHorasExtras(user, aprovador, horasExtrasRepository);
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("dataInicio", LocalDate.now().minusDays(1).toString());
         params.add("dataFim", LocalDate.now().plusDays(1).toString());
@@ -316,7 +318,8 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /horas-extras passando um id valido")
     void testFindById() throws Exception {
         // Given
-        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
         RequestBuilder requestBuilder = get(ENDPOINT + "/" + horasExtras.getId()).headers(token);
 
         // When
@@ -334,7 +337,8 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 404 (Not found) quando chamar via GET o endpoint /horas-extras passando um id invalido")
     void testFindById_IdInvalido() throws Exception {
         // Given
-        createHorasExtras(aprovador, horasExtrasRepository);
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        createHorasExtras(user, aprovador, horasExtrasRepository);
         RequestBuilder requestBuilder = get(ENDPOINT + "/" + 99999).headers(token);
 
         // When
@@ -349,7 +353,7 @@ class HorasExtrasControllerTest {
     void testUpdate() throws Exception {
         // Given
         User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
-        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
+        HorasExtras horasExtras = createHorasExtras(randomUser, aprovador, horasExtrasRepository);
         AtualizarHorasExtrasDTO dto = new AtualizarHorasExtrasDTO(
                 horasExtras.getDataHoraInicio().minusHours(1),
                 horasExtras.getDataHoraFim().plusHours(1),
@@ -381,7 +385,7 @@ class HorasExtrasControllerTest {
     void testUpdate_DadosInvalidos() throws Exception {
         // Given
         User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
-        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
+        HorasExtras horasExtras = createHorasExtras(randomUser, aprovador, horasExtrasRepository);
         AtualizarHorasExtrasDTO dto = new AtualizarHorasExtrasDTO(
                 null,
                 null,
@@ -403,7 +407,7 @@ class HorasExtrasControllerTest {
     void testUpdate_IdInvalido() throws Exception {
         // Given
         User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
-        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
+        HorasExtras horasExtras = createHorasExtras(randomUser, aprovador, horasExtrasRepository);
         AtualizarHorasExtrasDTO dto = new AtualizarHorasExtrasDTO(
                 horasExtras.getDataHoraInicio().minusHours(1),
                 horasExtras.getDataHoraFim().plusHours(1),
@@ -424,7 +428,8 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 204 (No content) quando chamar via DELETE o endpoint /horas-extras passando um id valido")
     void testDelete() throws Exception {
         // Given
-        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
         RequestBuilder requestBuilder = delete(ENDPOINT + "/" + horasExtras.getId()).headers(token);
 
         // When
@@ -441,7 +446,8 @@ class HorasExtrasControllerTest {
     @DisplayName("Deve retornar 204 (No content) quando chamar via DELETE o endpoint /horas-extras passando um id valido")
     void testDelete_IdInvalido() throws Exception {
         // Given
-        HorasExtras horasExtras = createHorasExtras(aprovador, horasExtrasRepository);
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        HorasExtras horasExtras = createHorasExtras(user, aprovador, horasExtrasRepository);
         RequestBuilder requestBuilder = delete(ENDPOINT + "/" + 9999).headers(token);
 
         // When

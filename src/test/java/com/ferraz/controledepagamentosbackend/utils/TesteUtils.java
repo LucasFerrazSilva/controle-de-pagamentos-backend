@@ -6,6 +6,9 @@ import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepo
 import com.ferraz.controledepagamentosbackend.domain.horasextras.dto.NovasHorasExtrasDTO;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.Notificacao;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoService;
+import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscal;
+import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalRepository;
+import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
@@ -80,12 +83,21 @@ public class TesteUtils {
         return httpHeaders;
     }
 
-    public static HorasExtras createHorasExtras(User aprovador, HorasExtrasRepository repository) throws Exception {
-        return createHorasExtras(aprovador, aprovador, repository);
+    @Transactional
+    public static NotaFiscal createNotaFiscal(User user, NotaFiscalRepository repository){
+        NovaNotaFiscalDTO dto = new NovaNotaFiscalDTO(
+                user.getId(),
+                LocalDateTime.now().getMonthValue(),
+                LocalDateTime.now().getYear(),
+                BigDecimal.valueOf(2000),
+                "TEST"
+        );
+        NotaFiscal notaFiscal = new NotaFiscal(dto, user);
+        return repository.save(notaFiscal);
     }
 
     @Transactional
-    public static HorasExtras createHorasExtras(User user, User aprovador, HorasExtrasRepository repository) throws Exception {
+    public static HorasExtras createHorasExtras(User user, User aprovador, HorasExtrasRepository repository) {
         NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
