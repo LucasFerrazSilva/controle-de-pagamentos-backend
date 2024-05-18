@@ -7,6 +7,9 @@ import com.ferraz.controledepagamentosbackend.domain.notasfiscais.validations.No
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
+import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoService;
+import com.ferraz.controledepagamentosbackend.domain.user.User;
+import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,24 +23,26 @@ import static com.ferraz.controledepagamentosbackend.infra.security.Authenticati
 @Service
 public class NotaFiscalService {
     private final NotaFiscalRepository repository;
-    private final UserRepository userRepository;
     private final List<NovasNotasFiscaisValidator> novasNotasFiscaisValidators;
     private final List<AtualizarNotasFiscaisValidator> atualizarNotasFiscaisValidators;
+    private final NotificacaoService notificacaoService;
+    private final UserRepository userRepository;
 
-    public NotaFiscalService(NotaFiscalRepository notaFiscalRepository, UserRepository userRepository, List<NovasNotasFiscaisValidator> novasNotasFiscaisValidators, List<AtualizarNotasFiscaisValidator> atualizarNotasFiscaisValidators) {
+    public NotaFiscalService(NotaFiscalRepository notaFiscalRepository, List<NovasNotasFiscaisValidator> novasNotasFiscaisValidators, List<AtualizarNotasFiscaisValidator> atualizarNotasFiscaisValidators, NotificacaoService notificacaoService, UserRepository userRepository) {
         this.repository = notaFiscalRepository;
-        this.userRepository = userRepository;
         this.novasNotasFiscaisValidators = novasNotasFiscaisValidators;
         this.atualizarNotasFiscaisValidators = atualizarNotasFiscaisValidators;
+        this.notificacaoService = notificacaoService;
+        this.userRepository = userRepository;
     }
 
     @Transactional
     public NotaFiscal create(NovaNotaFiscalDTO dto){
         novasNotasFiscaisValidators.forEach(validator -> validator.validate(dto));
-
         User user = userRepository.findById(dto.idUser()).orElseThrow();
         NotaFiscal notaFiscal = new NotaFiscal(dto, getLoggedUser(), user);
         repository.save(notaFiscal);
+        notificacaoService.create(notaFiscal.getUser(), "A emissão de uma nota fiscal foi solicitada para voce", "/notas-fiscais");
 
         return notaFiscal;
     }
@@ -57,8 +62,7 @@ public class NotaFiscalService {
     public NotaFiscal update(Long id, AtualizarNotaFiscalDTO dto){
         atualizarNotasFiscaisValidators.forEach(validator -> validator.validate(id, dto));
         NotaFiscal notaFiscal = repository.findById(id).orElseThrow();
-        User user = userRepository.findById(dto.idUser()).orElseThrow();
-        notaFiscal.update(dto, getLoggedUser(), user);
+        notaFiscal.update(dto, getLoggedUser());
         repository.save(notaFiscal);
 
         return notaFiscal;

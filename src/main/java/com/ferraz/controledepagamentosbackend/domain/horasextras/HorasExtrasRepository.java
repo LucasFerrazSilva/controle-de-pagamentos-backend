@@ -23,6 +23,8 @@ public interface HorasExtrasRepository extends JpaRepository<HorasExtras, Long> 
     );
 
     List<HorasExtras> findByUserAndStatusIn(User user, List<HorasExtrasStatus> status);
+
     List<HorasExtras> findByIdNotAndUserAndStatusIn(Long id, User user, List<HorasExtrasStatus> status);
 
+    List<HorasExtras> findByUserAndStatusAndPagoIsFalse(User prestador, HorasExtrasStatus aprovado);
 }

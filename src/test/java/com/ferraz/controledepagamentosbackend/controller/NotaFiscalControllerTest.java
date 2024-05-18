@@ -63,8 +63,6 @@ class NotaFiscalControllerTest {
     @Transactional
     void beforeAll() throws Exception {
         this.token = login(mvc, userRepository);
-
-
     }
 
     @BeforeEach

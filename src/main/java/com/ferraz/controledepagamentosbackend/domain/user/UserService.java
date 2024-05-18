@@ -3,7 +3,11 @@ package com.ferraz.controledepagamentosbackend.domain.user;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.exceptions.UserNotFoundException;
+import com.ferraz.controledepagamentosbackend.domain.user.validations.NovaSenhaValidator;
 import com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +19,8 @@ import com.ferraz.controledepagamentosbackend.domain.user.validations.CreateUser
 import com.ferraz.controledepagamentosbackend.domain.user.validations.DeleteUserValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.UpdateUserValidator;
 
+import static com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService.getLoggedUser;
+
 import jakarta.transaction.Transactional;
 
 @Service
@@ -25,16 +31,18 @@ public class UserService {
 	private final List<UpdateUserValidator> updateUserValidators;
 	private final List<DeleteUserValidator> deleteUserValidators;
 	private final List<CreateUserValidator> createUserValidators;
+	private final List<NovaSenhaValidator> novaSenhaValidators;
 
-	public UserService(UserRepository repository, PasswordEncoder encoder, 
-			List<UpdateUserValidator> updateUserValidators, List<DeleteUserValidator> deleteUserValidators,
-			List<CreateUserValidator> createUserValidators) {
+	public UserService(UserRepository repository, PasswordEncoder encoder,
+                       List<UpdateUserValidator> updateUserValidators, List<DeleteUserValidator> deleteUserValidators,
+                       List<CreateUserValidator> createUserValidators, List<NovaSenhaValidator> novaSenhaValidators) {
 		this.createUserValidators = createUserValidators;
 		this.deleteUserValidators = deleteUserValidators;
 		this.updateUserValidators = updateUserValidators;
+		this.novaSenhaValidators = novaSenhaValidators;
 		this.repository = repository;
 		this.encoder = encoder;
-	}
+    }
 
 	@Transactional
 	public User criarUsuario(DadosCreateUserDTO dados) {
@@ -73,5 +81,16 @@ public class UserService {
 
     public List<User> listarPorPerfil(UsuarioPerfil usuarioPerfil) {
 		return repository.findByPerfilAndStatusOrderByNome(usuarioPerfil, UserStatus.ATIVO);
+	}
+
+	@Transactional
+	public User mudarSenha(NovaSenhaDTO dto) {
+		novaSenhaValidators.forEach(validator -> validator.validate(dto));
+		User user = repository.findById(getLoggedUser().getId()).orElseThrow();
+		user.mudarSenha(encoder.encode(dto.novaSenha()), user);
+		repository.save(user);
+
+		return user;
+
 	}
 }

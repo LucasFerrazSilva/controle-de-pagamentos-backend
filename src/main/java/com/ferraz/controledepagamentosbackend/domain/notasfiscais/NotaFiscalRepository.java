@@ -1,5 +1,6 @@
 package com.ferraz.controledepagamentosbackend.domain.notasfiscais;
 
+import com.ferraz.controledepagamentosbackend.domain.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public interface NotaFiscalRepository extends JpaRepository<NotaFiscal, Long> {
 
@@ -24,5 +26,7 @@ public interface NotaFiscalRepository extends JpaRepository<NotaFiscal, Long> {
             @Param("valor") BigDecimal valor,
             @Param("status") NotaFiscalStatus status
     );
+
+    List<NotaFiscal> findByUser(User user);
 
 }
