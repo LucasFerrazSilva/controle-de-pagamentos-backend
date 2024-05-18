@@ -22,8 +22,7 @@ public record NovaNotaFiscalDTO(
                         prestador.getId(),
                         LocalDate.now().getMonthValue(),
                         LocalDate.now().getYear(),
-                        valor,
-                        null
+                        valor
                 );
         }
 }

@@ -70,4 +70,13 @@ public class NotaFiscalController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/marcar-como-paga/{id}")
+    @PreAuthorize("hasRole('GESTOR') || hasRole('ADMIN') || hasRole('FINANCEIRO')")
+    public ResponseEntity<NotaFiscalDTO> marcarComoPaga(@PathVariable("id") Long id){
+        NotaFiscal notaFiscal = service.marcarComoPaga(id);
+        NotaFiscalDTO notaFiscalDTO = new NotaFiscalDTO(notaFiscal);
+
+        return ResponseEntity.ok(notaFiscalDTO);
+    }
 }

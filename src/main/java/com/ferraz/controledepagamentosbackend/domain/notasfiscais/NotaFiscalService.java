@@ -74,4 +74,12 @@ public class NotaFiscalService {
         notaFiscal.deactivate(getLoggedUser());
         repository.save(notaFiscal);
     }
+
+    @Transactional
+    public NotaFiscal marcarComoPaga(Long id){
+        NotaFiscal notaFiscal = repository.findById(id).orElseThrow();
+        notaFiscal.marcarComoPago(getLoggedUser());
+        return repository.save(notaFiscal);
+    }
+
 }

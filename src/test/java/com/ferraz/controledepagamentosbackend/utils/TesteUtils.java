@@ -89,8 +89,7 @@ public class TesteUtils {
                 user.getId(),
                 LocalDateTime.now().getMonthValue(),
                 LocalDateTime.now().getYear(),
-                BigDecimal.valueOf(2000),
-                "TEST"
+                BigDecimal.valueOf(2000)
         );
         NotaFiscal notaFiscal = new NotaFiscal(dto, createUser, user);
         return repository.save(notaFiscal);

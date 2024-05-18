@@ -59,7 +59,7 @@ public class NotaFiscal {
     @JoinColumn(name = "UPDATE_USER_ID")
     private User updateUser;
 
-    public NotaFiscal(NovaNotaFiscalDTO dto, User user){
+    public NotaFiscal(NovaNotaFiscalDTO dto, User createUser, User user){
         this.mes = dto.mes();
         this.ano = dto.ano();
         this.valor = dto.valor();
@@ -74,13 +74,18 @@ public class NotaFiscal {
         this.mes = dto.mes();
         this.ano = dto.ano();
         this.valor = dto.valor();
-        this.filePath = dto.filePath();
 
         update(user);
     }
 
     public void deactivate(User user){
         this.status = NotaFiscalStatus.INATIVA;
+
+        update(user);
+    }
+
+    public void marcarComoPago(User user) {
+        this.status = NotaFiscalStatus.PAGA;
 
         update(user);
     }

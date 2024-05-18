@@ -84,8 +84,7 @@ class NotaFiscalControllerTest {
                 user.getId(),
                 4,
                 2024,
-                BigDecimal.valueOf(2000.00),
-                "path_teste"
+                BigDecimal.valueOf(2000.00)
         );
         String dadosValidos = novaNotaFiscalDTOJacksonTester.write(dto).getJson();
         RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
@@ -140,13 +139,11 @@ class NotaFiscalControllerTest {
         User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
         NotaFiscal notaFiscal = createNotaFiscal(user, user, notaFiscalRepository);
         BigDecimal novoValor = notaFiscal.getValor().add(BigDecimal.valueOf(1000));
-        String novoCaminho = "novo_caminho";
         AtualizarNotaFiscalDTO dto = new AtualizarNotaFiscalDTO(
                 user.getId(),
                 notaFiscal.getMes(),
                 notaFiscal.getAno(),
-                novoValor,
-                novoCaminho
+                novoValor
         );
 
         String dadosValidos = atualizarNotaFiscalDTOJacksonTester.write(dto).getJson();
@@ -191,8 +188,7 @@ class NotaFiscalControllerTest {
                 user.getId(),
                 LocalDateTime.now().getMonthValue() + 1,
                 2025,
-                BigDecimal.valueOf(2000.00),
-                "path_teste"
+                BigDecimal.valueOf(2000.00)
         );
         String dadosValidos = novaNotaFiscalDTOJacksonTester.write(dto).getJson();
         RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
@@ -211,8 +207,7 @@ class NotaFiscalControllerTest {
                 user.getId(),
                 LocalDateTime.now().getMonthValue(),
                 2025,
-                BigDecimal.valueOf(2000.00),
-                "path_teste"
+                BigDecimal.valueOf(2000.00)
         );
         String dadosValidos = novaNotaFiscalDTOJacksonTester.write(dto).getJson();
         RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
@@ -223,4 +218,23 @@ class NotaFiscalControllerTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
+
+    @Test
+    @DisplayName("Deve marcar uma nota fiscal como paga")
+    void testNotaFiscalPaga() throws Exception {
+        // Given
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        User financeiro = createRandomUser(userRepository, UsuarioPerfil.ROLE_FINANCEIRO);
+        NotaFiscal notaFiscal = createNotaFiscal(user, financeiro, notaFiscalRepository);
+        RequestBuilder requestBuilder = put(ENDPOINT + "/marcar-como-paga/" + notaFiscal.getId()).headers(token);
+
+        // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        NotaFiscalDTO dto = notaFiscalDTOJacksonTester.parse(response.getContentAsString()).getObject();
+        assertThat(dto.status()).isEqualTo(NotaFiscalStatus.PAGA);
+
+    }
+
 }
