@@ -7,6 +7,7 @@ import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -53,9 +55,21 @@ class UserControllerTest {
 	private JacksonTester<List<UserDTO>> userDtoListJackson;
     
     private HttpHeaders token;
-    
+
+	@Autowired
+	private JacksonTester<NovaSenhaDTO> novaSenhaDTOJacksonTester;
+
+	@Autowired
+	JacksonTester<UserDTO> userDTOJacksonTester;
+
+	@Autowired
+	private PasswordEncoder encoder;
+
+
+
     @BeforeAll
     void beforeAll() throws Exception {
+
     	token = login(mvc, userRepository);
     }
 
@@ -211,4 +225,57 @@ class UserControllerTest {
 		assertThat(response.getContentAsString()).isNotBlank();
 	}
 
+	@Test
+	@DisplayName("Deve mudar a senha de um usuário")
+	void testMudarSenha() throws Exception {
+		// Given
+		User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+		HttpHeaders randomUserToken = login(mvc, user);
+		String novaSenha = "Nova_senha123";
+		RequestBuilder request = montaHeadersTrocarSenha(novaSenha, randomUserToken);
+
+		// When
+		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
+		User novaSenhaUser = userRepository.findById(userDTOJacksonTester.parse(response.getContentAsString()).getObject().id()).orElseThrow();
+		// Then
+		assertThat(encoder.matches(novaSenha, novaSenhaUser.getSenha())).isTrue();
+	}
+
+	@Test
+	@DisplayName("Deve retornar erro por senha ser muito fraca")
+	void testMudarSenhaFraca() throws Exception {
+		// Given
+		String novaSenha = "senha_fraca";
+		RequestBuilder request = montaHeadersTrocarSenha(novaSenha, token);
+
+		// When
+		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
+
+		// Then
+
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	}
+
+	@Test
+	@DisplayName("Deve retornar erro de senha muito curta")
+	void testMudarSenhaCurta() throws Exception {
+		// Given
+		String novaSenha = "Senha@1";
+		RequestBuilder request = montaHeadersTrocarSenha(novaSenha, token);
+
+		// When
+		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
+
+		// Then
+
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	}
+
+	private RequestBuilder montaHeadersTrocarSenha(String novaSenha, HttpHeaders token) throws Exception {
+		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha, novaSenha);
+		String jsonDto = novaSenhaDTOJacksonTester.write(dto).getJson();
+
+        return put(endpoint + "/mudar-senha/").contentType(APPLICATION_JSON)
+				.content(jsonDto).headers(token);
+	}
 }
