@@ -272,7 +272,7 @@ class UserControllerTest {
 		User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
 		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha, novaSenha);
 		String jsonDto = novaSenhaDTOJacksonTester.write(dto).getJson();
-		RequestBuilder request = put(endpoint + "/mudar-senha/" + user.getId()).contentType(APPLICATION_JSON)
+		RequestBuilder request = put(endpoint + "/mudar-senha/").contentType(APPLICATION_JSON)
 				.content(jsonDto).headers(token);
 
 		return request;

@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.NovaSenhaValidator;
 import com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -82,10 +83,13 @@ public class UserService {
 	}
 
 	@Transactional
-	public User mudarSenha(Long id, NovaSenhaDTO dto){
+	public User mudarSenha(NovaSenhaDTO dto) throws BadRequestException {
 		novaSenhaValidators.forEach(validator -> validator.validate(dto));
-		User user = repository.getReferenceById(id);
-		user.mudarSenha(encoder.encode(dto.novaSenha()), getLoggedUser());
+		User user = getLoggedUser();
+        if (user == null) {
+			throw new BadRequestException();
+		}
+		user.mudarSenha(encoder.encode(dto.novaSenha()), user);
 		repository.save(user);
 
 		return user;

@@ -9,6 +9,7 @@ import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO
 import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
 import jakarta.validation.Valid;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -77,9 +78,9 @@ public class UserController {
 		return ResponseEntity.ok().body(dto);
 	}
 
-	@PutMapping("/mudar-senha/{id}")
-	public ResponseEntity<UserDTO> mudarSenha(@PathVariable Long id, @RequestBody @Valid NovaSenhaDTO dto){
-		User user = userService.mudarSenha(id, dto);
+	@PutMapping("/mudar-senha/")
+	public ResponseEntity<UserDTO> mudarSenha(@RequestBody @Valid NovaSenhaDTO dto) throws BadRequestException {
+		User user = userService.mudarSenha(dto);
 		UserDTO userDTO = new UserDTO(user);
 
 		return ResponseEntity.ok(userDTO);
