@@ -9,7 +9,6 @@ import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO
 import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
 import jakarta.validation.Valid;
-import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
