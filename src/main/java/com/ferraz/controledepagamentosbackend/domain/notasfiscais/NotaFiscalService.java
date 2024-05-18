@@ -6,6 +6,7 @@ import com.ferraz.controledepagamentosbackend.domain.notasfiscais.validations.At
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.validations.NovasNotasFiscaisValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +43,9 @@ public class NotaFiscalService {
     }
 
     public Page<NotaFiscal> list(Pageable pageable, Long idUsuario, Integer mes, Integer ano, BigDecimal valor, NotaFiscalStatus status){
+        if (getLoggedUser().getPerfil().equals(UsuarioPerfil.ROLE_USER))
+            idUsuario = getLoggedUser().getId();
+
         return repository.findByFiltros(pageable, idUsuario , mes, ano, valor, status);
     }
 

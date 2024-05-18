@@ -63,7 +63,6 @@ public class NotaFiscal {
         this.mes = dto.mes();
         this.ano = dto.ano();
         this.valor = dto.valor();
-        this.filePath = dto.filePath();
         this.status = NotaFiscalStatus.SOLICITADA;
 
         this.createDatetime = LocalDateTime.now();
@@ -75,7 +74,6 @@ public class NotaFiscal {
         this.mes = dto.mes();
         this.ano = dto.ano();
         this.valor = dto.valor();
-        this.filePath = dto.filePath();
         this.user = user;
 
         update(updateUser);
