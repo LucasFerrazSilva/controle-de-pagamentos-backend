@@ -27,6 +27,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -226,12 +227,8 @@ class UserControllerTest {
 	@DisplayName("Deve mudar a senha de um usuário")
 	void testMudarSenha() throws Exception {
 		// Given
-		User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
 		String novaSenha = "Nova_senha123";
-		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha, novaSenha);
-		String jsonDto = novaSenhaDTOJacksonTester.write(dto).getJson();
-		RequestBuilder request = put(endpoint + "/mudar-senha/" + user.getId()).contentType(APPLICATION_JSON)
-				.content(jsonDto).headers(token);
+		RequestBuilder request = trocaSenha(novaSenha);
 
 		// When
 		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
@@ -241,4 +238,43 @@ class UserControllerTest {
 		assertThat(encoder.matches(novaSenha, novaSenhaUser.getSenha())).isTrue();
 	}
 
+	@Test
+	@DisplayName("Deve retornar erro por senha ser muito fraca")
+	void testMudarSenhaFraca() throws Exception {
+		// Given
+		String novaSenha = "senha_fraca";
+		RequestBuilder request = trocaSenha(novaSenha);
+
+		// When
+		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
+
+		// Then
+
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	}
+
+	@Test
+	@DisplayName("Deve retornar erro de senha muito curta")
+	void testMudarSenhaCurta() throws Exception {
+		// Given
+		String novaSenha = "Senha@1";
+		RequestBuilder request = trocaSenha(novaSenha);
+
+		// When
+		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
+
+		// Then
+
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	}
+
+	private RequestBuilder trocaSenha(String novaSenha) throws IOException {
+		User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha, novaSenha);
+		String jsonDto = novaSenhaDTOJacksonTester.write(dto).getJson();
+		RequestBuilder request = put(endpoint + "/mudar-senha/" + user.getId()).contentType(APPLICATION_JSON)
+				.content(jsonDto).headers(token);
+
+		return request;
+	}
 }
