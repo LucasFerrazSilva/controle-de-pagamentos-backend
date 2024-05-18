@@ -273,12 +273,10 @@ class UserControllerTest {
 	}
 
 	private RequestBuilder montaHeadersTrocarSenha(String novaSenha, HttpHeaders token) throws Exception {
-		User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
 		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha, novaSenha);
 		String jsonDto = novaSenhaDTOJacksonTester.write(dto).getJson();
 
-		MockHttpServletRequestBuilder headers = put(endpoint + "/mudar-senha/").contentType(APPLICATION_JSON)
+        return put(endpoint + "/mudar-senha/").contentType(APPLICATION_JSON)
 				.content(jsonDto).headers(token);
-		return headers;
 	}
 }
