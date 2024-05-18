@@ -5,10 +5,13 @@ import static com.ferraz.controledepagamentosbackend.infra.security.Authenticati
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import com.ferraz.controledepagamentosbackend.domain.emails.NotificarSolicitacaoDeAprovacaoService;
+import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -39,22 +42,24 @@ public class HorasExtrasService {
 	private final List<AvaliarHorasValidator> avaliarHorasValidators;
 	private final List<AtualizarHorasExtrasValidator> atualizarHorasExtrasValidators;
 	private final LinkRepository linkRepository;
-	private final SolicitarAprovacaoService solicitarAprovacaoService;
+	private final NotificarSolicitacaoDeAprovacaoService notificarSolicitacaoDeAprovacaoService;
 	private final List<AvaliarViaLinkValidator> avaliarViaLinkValidators;
+	private final NotificacaoService notificacaoService;
 
 	public HorasExtrasService(HorasExtrasRepository repository, UserRepository userRepository,
-			List<NovasHorasExtrasValidator> novasHorasExtrasValidators,
-			List<AtualizarHorasExtrasValidator> atualizarHorasExtrasValidators, LinkRepository linkRepository,
-			List<AvaliarHorasValidator> avaliarHorasValidators, SolicitarAprovacaoService solicitarAprovacaoService,
-			List<AvaliarViaLinkValidator> avaliarViaLinkValidators) {
+							  List<NovasHorasExtrasValidator> novasHorasExtrasValidators,
+							  List<AtualizarHorasExtrasValidator> atualizarHorasExtrasValidators, LinkRepository linkRepository,
+							  List<AvaliarHorasValidator> avaliarHorasValidators, NotificarSolicitacaoDeAprovacaoService notificarSolicitacaoDeAprovacaoService,
+							  List<AvaliarViaLinkValidator> avaliarViaLinkValidators, NotificacaoService notificacaoService) {
 		this.repository = repository;
 		this.userRepository = userRepository;
 		this.novasHorasExtrasValidators = novasHorasExtrasValidators;
 		this.avaliarHorasValidators = avaliarHorasValidators;
 		this.atualizarHorasExtrasValidators = atualizarHorasExtrasValidators;
 		this.linkRepository = linkRepository;
-		this.solicitarAprovacaoService = solicitarAprovacaoService;
+		this.notificarSolicitacaoDeAprovacaoService = notificarSolicitacaoDeAprovacaoService;
 		this.avaliarViaLinkValidators = avaliarViaLinkValidators;
+		this.notificacaoService = notificacaoService;
 	}
 
 	@Transactional
@@ -63,7 +68,7 @@ public class HorasExtrasService {
 		User aprovador = userRepository.findById(dto.idAprovador()).orElseThrow();
 		HorasExtras horasExtras = new HorasExtras(dto, getLoggedUser(), aprovador);
 		repository.save(horasExtras);
-		solicitarAprovacaoService.solicitar(horasExtras);
+		notificarSolicitacaoDeAprovacaoService.enviar(horasExtras);
 		return horasExtras;
 	}
 
@@ -103,7 +108,7 @@ public class HorasExtrasService {
 		User aprovador = userRepository.findById(atualizarHorasExtrasDTO.idAprovador()).orElseThrow();
 		horasExtras.update(atualizarHorasExtrasDTO, getLoggedUser(), aprovador);
 		repository.save(horasExtras);
-		solicitarAprovacaoService.solicitar(horasExtras);
+		notificarSolicitacaoDeAprovacaoService.enviar(horasExtras);
 		return horasExtras;
 	}
 
@@ -122,9 +127,13 @@ public class HorasExtrasService {
 		hora.setUpdateDatetime(LocalDateTime.now());
 		hora.setUpdateUser(getLoggedUser());
 		repository.save(hora);
+
+		criarNotificacao(hora);
+
 		return hora;
 	}
 
+	@Transactional
 	public Link avaliarViaLink(UUID id) {
 		Link link = linkRepository.findByIdAndStatus(id, LinkStatus.CRIADO)
 				.orElseThrow(() -> new NoSuchElementException(
@@ -138,7 +147,17 @@ public class HorasExtrasService {
 		link.marcarComoUsado();
 		linkRepository.save(link);
 
+		criarNotificacao(horasExtras);
+
 		return link;
+	}
+
+	private void criarNotificacao(HorasExtras horasExtras) {
+		String solicitante = horasExtras.getAprovador().getNome();
+		String dataSolicitacao = horasExtras.getDataHoraInicio().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+		String resultadoAvaliacao = horasExtras.getStatus().equals(HorasExtrasStatus.APROVADO) ? "aprovou" : "recusou";
+		String descricao = "%s %s as horas extras realizadas no dia %s".formatted(solicitante, resultadoAvaliacao, dataSolicitacao);
+		notificacaoService.create(horasExtras.getUser(), descricao, "/horas-extras");
 	}
 
 }

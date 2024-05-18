@@ -1,5 +1,7 @@
 package com.ferraz.controledepagamentosbackend.domain.user;
 
+import static com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService.getLoggedUser;
+
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -10,17 +12,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
 import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
-import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.CreateUserValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.DeleteUserValidator;
+import com.ferraz.controledepagamentosbackend.domain.user.validations.NovaSenhaValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.UpdateUserValidator;
-import com.ferraz.controledepagamentosbackend.infra.email.EmailService;
 import com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService;
 
 import jakarta.transaction.Transactional;
@@ -34,28 +34,28 @@ public class UserService {
 	@Value("${application_sender}")
     private String applicationSender;
 
+	private final ParametroRepository parametroRepository;
 	private final UserRepository repository;
 	private final PasswordEncoder encoder;
 	private final List<UpdateUserValidator> updateUserValidators;
 	private final List<DeleteUserValidator> deleteUserValidators;
 	private final List<CreateUserValidator> createUserValidators;
-	private final SpringTemplateEngine templateEngine;
 	private final EnviarCredenciaisEmail enviarCredenciaisEmail;
-	private final ParametroRepository parametroRepository;
+	private final List<NovaSenhaValidator> novaSenhaValidators;
 
 	public UserService(UserRepository repository, PasswordEncoder encoder,
-			List<UpdateUserValidator> updateUserValidators, List<DeleteUserValidator> deleteUserValidators,
-			List<CreateUserValidator> createUserValidators, SpringTemplateEngine templateEngine,
-			EmailService emailService, EnviarCredenciaisEmail enviarCredenciaisEmail, ParametroRepository parametroRepository) {
+                       List<UpdateUserValidator> updateUserValidators, List<DeleteUserValidator> deleteUserValidators,
+                       List<CreateUserValidator> createUserValidators, List<NovaSenhaValidator> novaSenhaValidators, 
+                       EnviarCredenciaisEmail enviarCredenciaisEmail, ParametroRepository parametroRepository) {
 		this.parametroRepository = parametroRepository;
 		this.enviarCredenciaisEmail = enviarCredenciaisEmail;
-		this.templateEngine = templateEngine;
 		this.createUserValidators = createUserValidators;
 		this.deleteUserValidators = deleteUserValidators;
 		this.updateUserValidators = updateUserValidators;
+		this.novaSenhaValidators = novaSenhaValidators;
 		this.repository = repository;
 		this.encoder = encoder;
-	}
+    }
 
 	@Transactional
 	public User criarUsuario(DadosCreateUserDTO dados) {
@@ -106,6 +106,7 @@ public class UserService {
 	public List<User> listarPorPerfil(UsuarioPerfil usuarioPerfil) {
 		return repository.findByPerfilAndStatusOrderByNome(usuarioPerfil, UserStatus.ATIVO);
 	}
+
 	
 	private boolean deveEnviarEmailDeCredenciais() {
         return parametroRepository
@@ -128,5 +129,16 @@ public class UserService {
                                 .collect(Collectors.joining());
 
 		return password;
+}
+
+
+	@Transactional
+	public User mudarSenha(NovaSenhaDTO dto) {
+		novaSenhaValidators.forEach(validator -> validator.validate(dto));
+		User user = repository.findById(getLoggedUser().getId()).orElseThrow();
+		user.mudarSenha(encoder.encode(dto.novaSenha()), user);
+		repository.save(user);
+
+		return user;
 	}
 }
