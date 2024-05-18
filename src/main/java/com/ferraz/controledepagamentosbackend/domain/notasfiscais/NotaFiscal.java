@@ -59,16 +59,16 @@ public class NotaFiscal {
     @JoinColumn(name = "UPDATE_USER_ID")
     private User updateUser;
 
-    public NotaFiscal(NovaNotaFiscalDTO dto, User user){
+    public NotaFiscal(NovaNotaFiscalDTO dto, User createUser, User user){
         this.mes = dto.mes();
         this.ano = dto.ano();
         this.valor = dto.valor();
         this.filePath = dto.filePath();
+        this.user = user;
         this.status = NotaFiscalStatus.SOLICITADA;
 
         this.createDatetime = LocalDateTime.now();
-        this.createUser = user;
-        this.user = user;
+        this.createUser = createUser;
     }
 
     public void update(AtualizarNotaFiscalDTO dto, User user){

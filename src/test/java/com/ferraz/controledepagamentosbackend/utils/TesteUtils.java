@@ -63,7 +63,7 @@ public class TesteUtils {
     @Transactional
     public static User createRandomUser(UserRepository userRepository, UsuarioPerfil perfil) {
         int randomNumber = new Random().nextInt(1000000);
-        DadosCreateUserDTO dto = new DadosCreateUserDTO("Usuario " + randomNumber, randomNumber + "@mail.com", new BCryptPasswordEncoder().encode(DEFAULT_PASSWORD), new BigDecimal(randomNumber), perfil);
+        DadosCreateUserDTO dto = new DadosCreateUserDTO("Usuario " + randomNumber, randomNumber + "@mail.com", new BCryptPasswordEncoder().encode(DEFAULT_PASSWORD), new BigDecimal(new Random().nextInt(1000, 10000)), perfil);
         User user = new User(dto);
         return userRepository.save(user);
     }
@@ -92,7 +92,7 @@ public class TesteUtils {
                 BigDecimal.valueOf(2000),
                 "TEST"
         );
-        NotaFiscal notaFiscal = new NotaFiscal(dto, user);
+        NotaFiscal notaFiscal = new NotaFiscal(dto, user, user);
         return repository.save(notaFiscal);
     }
 
@@ -102,6 +102,19 @@ public class TesteUtils {
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(4),
                 "Descricao hora extra",
+                aprovador.getId());
+        HorasExtras horasExtras = new HorasExtras(dto, user, aprovador);
+        return repository.save(horasExtras);
+    }
+
+    @Transactional
+    public static HorasExtras createRandomHorasExtras(User user, User aprovador, HorasExtrasRepository repository) {
+        int randomOffset = new Random().nextInt(1000);
+        int randomQuantidadeDeHoras = new Random().nextInt(11) + 1;
+        NovasHorasExtrasDTO dto = new NovasHorasExtrasDTO(
+                LocalDateTime.now().plusHours(randomOffset),
+                LocalDateTime.now().plusHours(randomOffset + randomQuantidadeDeHoras),
+                "Descricao hora extra " + randomOffset,
                 aprovador.getId());
         HorasExtras horasExtras = new HorasExtras(dto, user, aprovador);
         return repository.save(horasExtras);

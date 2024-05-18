@@ -4,6 +4,9 @@ import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.AtualizarN
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.validations.AtualizarNotasFiscaisValidator;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.validations.NovasNotasFiscaisValidator;
+import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoService;
+import com.ferraz.controledepagamentosbackend.domain.user.User;
+import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,18 +22,24 @@ public class NotaFiscalService {
     private final NotaFiscalRepository repository;
     private final List<NovasNotasFiscaisValidator> novasNotasFiscaisValidators;
     private final List<AtualizarNotasFiscaisValidator> atualizarNotasFiscaisValidators;
+    private final NotificacaoService notificacaoService;
+    private final UserRepository userRepository;
 
-    public NotaFiscalService(NotaFiscalRepository notaFiscalRepository, List<NovasNotasFiscaisValidator> novasNotasFiscaisValidators, List<AtualizarNotasFiscaisValidator> atualizarNotasFiscaisValidators) {
+    public NotaFiscalService(NotaFiscalRepository notaFiscalRepository, List<NovasNotasFiscaisValidator> novasNotasFiscaisValidators, List<AtualizarNotasFiscaisValidator> atualizarNotasFiscaisValidators, NotificacaoService notificacaoService, UserRepository userRepository) {
         this.repository = notaFiscalRepository;
         this.novasNotasFiscaisValidators = novasNotasFiscaisValidators;
         this.atualizarNotasFiscaisValidators = atualizarNotasFiscaisValidators;
+        this.notificacaoService = notificacaoService;
+        this.userRepository = userRepository;
     }
 
     @Transactional
     public NotaFiscal create(NovaNotaFiscalDTO dto){
         novasNotasFiscaisValidators.forEach(validator -> validator.validate(dto));
-        NotaFiscal notaFiscal = new NotaFiscal(dto, getLoggedUser());
+        User user = userRepository.findById(dto.idUser()).orElseThrow();
+        NotaFiscal notaFiscal = new NotaFiscal(dto, getLoggedUser(), user);
         repository.save(notaFiscal);
+        notificacaoService.create(notaFiscal.getUser(), "A emissão de uma nota fiscal foi solicitada para voce", "/notas-fiscais");
 
         return notaFiscal;
     }
@@ -59,4 +68,5 @@ public class NotaFiscalService {
         notaFiscal.deactivate(getLoggedUser());
         repository.save(notaFiscal);
     }
+
 }
