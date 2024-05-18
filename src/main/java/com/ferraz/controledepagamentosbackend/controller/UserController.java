@@ -78,7 +78,7 @@ public class UserController {
 		return ResponseEntity.ok().body(dto);
 	}
 
-	@PutMapping("/mudar-senha/")
+	@PutMapping("/mudar-senha")
 	public ResponseEntity<UserDTO> mudarSenha(@RequestBody @Valid NovaSenhaDTO dto) {
 		User user = userService.mudarSenha(dto);
 		UserDTO userDTO = new UserDTO(user);
