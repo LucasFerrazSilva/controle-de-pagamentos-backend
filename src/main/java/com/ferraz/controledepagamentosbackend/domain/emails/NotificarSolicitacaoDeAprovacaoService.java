@@ -1,5 +1,6 @@
-package com.ferraz.controledepagamentosbackend.domain.horasextras;
+package com.ferraz.controledepagamentosbackend.domain.emails;
 
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
 import com.ferraz.controledepagamentosbackend.domain.link.AcaoLink;
 import com.ferraz.controledepagamentosbackend.domain.link.Link;
 import com.ferraz.controledepagamentosbackend.domain.link.LinkService;
@@ -19,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class SolicitarAprovacaoService {
+public class NotificarSolicitacaoDeAprovacaoService {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -32,7 +33,7 @@ public class SolicitarAprovacaoService {
     private final ParametroRepository parametroRepository;
     private final NotificacaoService notificacaoService;
 
-    public SolicitarAprovacaoService(LinkService linkService, SpringTemplateEngine templateEngine, EmailService emailService, ParametroRepository parametroRepository, NotificacaoService notificacaoService) {
+    public NotificarSolicitacaoDeAprovacaoService(LinkService linkService, SpringTemplateEngine templateEngine, EmailService emailService, ParametroRepository parametroRepository, NotificacaoService notificacaoService) {
         this.linkService = linkService;
         this.templateEngine = templateEngine;
         this.emailService = emailService;
@@ -40,7 +41,7 @@ public class SolicitarAprovacaoService {
         this.notificacaoService = notificacaoService;
     }
 
-    public void solicitar(HorasExtras horasExtras) {
+    public void enviar(HorasExtras horasExtras) {
         criarNotificacao(horasExtras);
 
         linkService.inativarLinks(horasExtras);
@@ -54,7 +55,7 @@ public class SolicitarAprovacaoService {
         String html = buildHtml(horasExtras, linkAprovar, linkRecusar);
         String subject = "Solicitação de aprovação de horas extras";
         EmailDTO emailDTO = new EmailDTO(applicationSender, horasExtras.getAprovador().getEmail(), subject, html);
-        
+
         new Thread(() -> this.emailService.sendMailSMTP(emailDTO)).start();
     }
 
