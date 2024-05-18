@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class SenhasIguaisValidator implements NovaSenhaValidator{
     @Override
     public void validate(NovaSenhaDTO dto) {
-        if (dto.novaSenha().equals(dto.repeteSenha())){
+        if (!dto.novaSenha().equals(dto.repeteSenha())){
             throw new SenhaInvalidaException("As senhas não correspondem");
         }
     }

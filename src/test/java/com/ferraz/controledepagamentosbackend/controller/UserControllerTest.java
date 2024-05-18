@@ -227,19 +227,18 @@ class UserControllerTest {
 	void testMudarSenha() throws Exception {
 		// Given
 		User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-		String novaSenha = "nova_senha123";
-		String repeteSenha= "nova_senha123";
-		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha, repeteSenha);
+		String novaSenha = "Nova_senha123";
+		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha, novaSenha);
 		String jsonDto = novaSenhaDTOJacksonTester.write(dto).getJson();
-		RequestBuilder request = get(endpoint + "/mudar-senha/" + user.getId()).contentType(APPLICATION_JSON)
+		RequestBuilder request = put(endpoint + "/mudar-senha/" + user.getId()).contentType(APPLICATION_JSON)
 				.content(jsonDto).headers(token);
 
 		// When
 		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
-
+		User novaSenhaUser = userRepository.findById(userDTOJacksonTester.parse(response.getContentAsString()).getObject().id()).orElseThrow();
 		// Then
 
-		assertThat(encoder.matches(novaSenha, user.getSenha())).isTrue();
+		assertThat(encoder.matches(novaSenha, novaSenhaUser.getSenha())).isTrue();
 	}
 
 }
