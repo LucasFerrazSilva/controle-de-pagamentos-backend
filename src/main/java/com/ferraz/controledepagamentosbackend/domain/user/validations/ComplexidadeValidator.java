@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 public class ComplexidadeValidator implements NovaSenhaValidator{
 
     private static final Pattern COMPLEXITY_PATTERN = Pattern.compile(
-            "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=_]).{8,}$");
+            "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=_]).{8,}$");
 
     @Override
     public void validate(NovaSenhaDTO dto) {
