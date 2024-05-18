@@ -54,6 +54,9 @@ public class HorasExtras {
     @JoinColumn(name = "ID_USUARIO_APROVADOR")
     private User aprovador;
 
+    @Column(name = "PAGO")
+    private Boolean pago;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS")
     private HorasExtrasStatus status;
@@ -82,6 +85,7 @@ public class HorasExtras {
         this.createDatetime = LocalDateTime.now();
         this.createUser = user;
         this.user = user;
+        this.pago = false;
     }
 
     public void update(AtualizarHorasExtrasDTO atualizarHorasExtrasDTO, User loggedUser, User aprovador) {
@@ -107,6 +111,11 @@ public class HorasExtras {
 
     public void avaliar(HorasExtrasStatus status) {
         this.status = status;
+        this.updateDatetime = LocalDateTime.now();
+    }
+
+    public void marcarComoPaga() {
+        this.pago = true;
         this.updateDatetime = LocalDateTime.now();
     }
 }

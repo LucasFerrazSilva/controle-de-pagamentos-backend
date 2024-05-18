@@ -1,12 +1,15 @@
-package com.ferraz.controledepagamentosbackend.domain.horasextras;
+package com.ferraz.controledepagamentosbackend.controller;
 
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtras;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasRepository;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.HorasExtrasStatus;
+import com.ferraz.controledepagamentosbackend.domain.horasextras.RotinaDeFechamentoService;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscal;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalRepository;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.Notificacao;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoRepository;
 import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoStatus;
 import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
-import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
@@ -14,23 +17,29 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomHorasExtras;
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomUser;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@AutoConfigureMockMvc
+@AutoConfigureJsonTesters
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class RotinaDeFechamentoServiceTest {
+class RotinaDeFechamentoControllerTest {
 
+    @Autowired
+    private MockMvc mvc;
     @Autowired
     private RotinaDeFechamentoService service;
     @Autowired
@@ -45,65 +54,13 @@ class RotinaDeFechamentoServiceTest {
     private ParametroRepository parametroRepository;
 
     @Test
-    @DisplayName("Deve calcular o valor da nota corretamente")
-    void testCalcularValorNota() {
-        // Given
-        int horasMes = Integer.parseInt(parametroRepository.findById(Parametros.HORAS_MES.getId()).orElseThrow().getValor());
-
-        BigDecimal valorEsperado = BigDecimal.ZERO;
-
-        User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-        valorEsperado = valorEsperado.add(randomUser.getSalario());
-
-        User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
-
-        List<HorasExtras> horasExtrasList = List.of(
-                createRandomHorasExtras(randomUser, aprovador, horasExtrasRepository),
-                createRandomHorasExtras(randomUser, aprovador, horasExtrasRepository)
-        );
-
-        BigDecimal valorHora = randomUser.getSalario().divide(new BigDecimal(horasMes), 2, RoundingMode.HALF_UP);
-
-        for (HorasExtras horasExtras: horasExtrasList) {
-            long horas = service.calcularHoras(horasExtras);
-            BigDecimal valorHorasExtras = valorHora.multiply(new BigDecimal(horas));
-            valorEsperado = valorEsperado.add(valorHorasExtras);
-        }
-
-        // When
-        BigDecimal total = service.calcularValorDaNota(randomUser, horasExtrasList);
-
-        // Then
-        //  Total deve ser o esperado
-        assertThat(total).isEqualByComparingTo(valorEsperado);
-    }
-
-    @Test
-    @DisplayName("Deve calcular o total de horas corretamente")
-    void testCalcularHoras() {
-        // Given
-        User randomUser = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-        User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
-        HorasExtras horasExtras = createRandomHorasExtras(randomUser, aprovador, horasExtrasRepository);
-        int horas = 2;
-        horasExtras.setDataHoraInicio(LocalDateTime.now());
-        horasExtras.setDataHoraFim(LocalDateTime.now().plusHours(horas));
-
-        // When
-        long horasCalculadas = service.calcularHoras(horasExtras);
-
-        // Then
-        assertThat(horasCalculadas).isEqualTo(horas);
-    }
-
-
-    @Test
-    @DisplayName("Deve executar a rotina de fechamento corretamente")
-    void testExecutarFechamento() {
+    @DisplayName("Deve realizar a rotina de fechamento corretamente")
+    void getAllParameters() throws Exception {
         // Given
         User randomUser1 = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
         User randomUser2 = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
         User aprovador = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+        HttpHeaders token = login(mvc, aprovador);
 
         HorasExtras horasExtrasUser1 = createRandomHorasExtras(randomUser1, aprovador, horasExtrasRepository);
         horasExtrasUser1.setStatus(HorasExtrasStatus.APROVADO);
@@ -119,7 +76,7 @@ class RotinaDeFechamentoServiceTest {
         BigDecimal valorEsperado2 = service.calcularValorDaNota(randomUser2, List.of(horasExtrasUser2));
 
         // When
-        service.executarFechamento();
+        mvc.perform(MockMvcRequestBuilders.post("/rotina-de-fechamento").headers(token)).andReturn().getResponse();
 
         // Then
         //  Foi criado um registro de nota fiscal para cada um com os valores corretos e status SOLICITADA

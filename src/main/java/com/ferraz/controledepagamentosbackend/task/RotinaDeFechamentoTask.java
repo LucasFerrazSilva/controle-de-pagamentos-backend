@@ -19,15 +19,15 @@ public class RotinaDeFechamentoTask {
         this.rotinaDeFechamentoService = rotinaDeFechamentoService;
     }
 
-    @Scheduled(fixedDelay = 1000)
-//    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void executarRotinaDeFechamento() {
         String diaHoraFechamento = parametroRepository.findById(Parametros.DIA_HORA_FECHAMENTO.getId()).orElseThrow().getValor();
-        Integer diaFechamento = Integer.parseInt(diaHoraFechamento.split(",")[0]);
-        Integer horaFechamento = Integer.parseInt(diaHoraFechamento.split(",")[1]);
+        int diaFechamento = Integer.parseInt(diaHoraFechamento.split(",")[0]);
+        int horaFechamento = Integer.parseInt(diaHoraFechamento.split(",")[1]);
 
-        LocalDateTime now = LocalDateTime.now();
-        if (now.getDayOfMonth() == diaFechamento && now.getHour() == horaFechamento) {
+        int diaAtual = LocalDateTime.now().getDayOfMonth();
+        int horaAtual = LocalDateTime.now().getHour();
+        if (diaAtual == diaFechamento && horaAtual == horaFechamento) {
             rotinaDeFechamentoService.executarFechamento();
         }
     }
