@@ -340,7 +340,7 @@ class UserControllerTest {
 		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha, novaSenha);
 		String jsonDto = novaSenhaDTOJacksonTester.write(dto).getJson();
 
-        return put(endpoint + "/mudar-senha/").contentType(APPLICATION_JSON)
+        return put(endpoint + "/mudar-senha").contentType(APPLICATION_JSON)
 				.content(jsonDto).headers(token);
 	}
 }
