@@ -1,13 +1,11 @@
 package com.ferraz.controledepagamentosbackend.domain.horasextras;
 
 import com.ferraz.controledepagamentosbackend.domain.user.User;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class HorasExtrasTest {
 
@@ -27,13 +25,14 @@ class HorasExtrasTest {
         User createUser = user;
         LocalDateTime updateDatetime = LocalDateTime.now();
         User updateUser = user;
+        Boolean pago = false;
 
         // When
         HorasExtras horasExtras =
-                new HorasExtras(id, user, dataHoraInicio, dataHoraFim, descricao, aprovador, status,
+                new HorasExtras(id, user, dataHoraInicio, dataHoraFim, descricao, aprovador, pago, status,
                         createDatetime, createUser, updateDatetime, updateUser);
         HorasExtras horasExtras2 =
-                new HorasExtras(id, user, dataHoraInicio, dataHoraFim, descricao, aprovador, status,
+                new HorasExtras(id, user, dataHoraInicio, dataHoraFim, descricao, aprovador, pago, status,
                         null, null, null, null);
         horasExtras2.setCreateDatetime(createDatetime);
         horasExtras2.setCreateUser(createUser);

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitação de Análise</title>
+    <style>
+        * {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: #dedede;
+        }
+
+        #card {
+            width: 60%;
+            margin: 10px auto;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #aaa;
+            padding: 10px 20px;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .row a {
+            width: 49%;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            line-height: 30px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        #link-aprovar {
+            border: 1px solid #072;
+            background-color: #093;
+        }
+
+        #link-recusar {
+            margin-left: 2%;
+            border: 1px solid #900;
+            background-color: #a00;
+        }
+
+        #assinatura {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="card">
+        <p>Olá, <span th:text="${nomePrestador}"></span></p>
+        <p>Favor emitir uma nota fiscal no valor de R$ <span th:text="${valorTotal}"></span> referente à
+            <span th:text="${mes}"></span>/<span th:text="${ano}"></span>.</p>
+        <p>Por favor, informar os dados bancários / chave pix no campo descrição da Nota Fiscal e fazer o upload da
+            mesma no sistema de <a th:href="${linkAplicacao}">controle de pagamentos</a>.</p>
+        <p id="assinatura">Controle de Pagamentos</p>
+    </div>
+</body>
+</html>
