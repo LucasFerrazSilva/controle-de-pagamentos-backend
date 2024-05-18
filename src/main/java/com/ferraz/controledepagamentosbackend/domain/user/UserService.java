@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.ferraz.controledepagamentosbackend.domain.emails.EnviarCredenciaisEmail;
 import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
@@ -28,7 +29,9 @@ import jakarta.transaction.Transactional;
 @Service
 public class UserService {
 	private final long PARAMETRO_ENVIO_EMAIL = 6;
-	public final String SENHA_DEFAULT = "senha!123";
+	
+	@Value("${senha.default}")
+	public String default_password;
 	
 	
 	@Value("${application_sender}")
@@ -71,7 +74,7 @@ public class UserService {
 			return user;
 		}
 		
-		user.setSenha(encoder.encode(SENHA_DEFAULT));
+		user.setSenha(encoder.encode(default_password));
 		repository.save(user);
 		return user;
 		

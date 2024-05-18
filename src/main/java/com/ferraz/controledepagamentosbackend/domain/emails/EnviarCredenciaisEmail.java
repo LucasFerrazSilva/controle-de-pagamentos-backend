@@ -1,4 +1,4 @@
-package com.ferraz.controledepagamentosbackend.domain.user;
+package com.ferraz.controledepagamentosbackend.domain.emails;
 
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.infra.email.EmailDTO;
 import com.ferraz.controledepagamentosbackend.infra.email.EmailService;
 

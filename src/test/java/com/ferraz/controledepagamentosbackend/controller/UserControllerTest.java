@@ -1,20 +1,19 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
-import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
-import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
-import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
-import com.ferraz.controledepagamentosbackend.domain.user.UserService;
-import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
-import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomUser;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.login;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,16 +31,19 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomUser;
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.login;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
+import com.ferraz.controledepagamentosbackend.domain.user.User;
+import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UserService;
+import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -62,6 +64,7 @@ class UserControllerTest {
     
     @Autowired
     private ParametroRepository parametroRepository;
+    
 
 	@Autowired
 	private JacksonTester<List<UserDTO>> userDtoListJackson;
@@ -257,7 +260,7 @@ class UserControllerTest {
 		User user = userRepository.findByEmail(dto.email());
 		
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
-		assertThat(new BCryptPasswordEncoder().matches(userService.SENHA_DEFAULT, user.getSenha())).isFalse();
+		assertThat(new BCryptPasswordEncoder().matches(userService.default_password, user.getSenha())).isFalse();
 		assertThat(user).isNotNull();
 	}
 	
@@ -283,7 +286,7 @@ class UserControllerTest {
 		User user = userRepository.findByEmail(dto.email());
 		
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
-		assertThat(new BCryptPasswordEncoder().matches(userService.SENHA_DEFAULT, user.getSenha())).isTrue();
+		assertThat(new BCryptPasswordEncoder().matches(userService.default_password, user.getSenha())).isTrue();
 		assertThat(user).isNotNull();
 	}
 
