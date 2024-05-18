@@ -20,7 +20,7 @@ public class RotinaDeFechamentoTask {
     }
 
     @Scheduled(cron = "0 0 * * * *")
-    public void executarRotinaDeFechamento() {
+    public void executarRotinaDeFechamento() throws InterruptedException {
         String diaHoraFechamento = parametroRepository.findById(Parametros.DIA_HORA_FECHAMENTO.getId()).orElseThrow().getValor();
         int diaFechamento = Integer.parseInt(diaHoraFechamento.split(",")[0]);
         int horaFechamento = Integer.parseInt(diaHoraFechamento.split(",")[1]);

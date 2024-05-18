@@ -99,7 +99,7 @@ class RotinaDeFechamentoServiceTest {
 
     @Test
     @DisplayName("Deve executar a rotina de fechamento corretamente")
-    void testExecutarFechamento() {
+    void testExecutarFechamento() throws InterruptedException {
         // Given
         User randomUser1 = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
         User randomUser2 = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);

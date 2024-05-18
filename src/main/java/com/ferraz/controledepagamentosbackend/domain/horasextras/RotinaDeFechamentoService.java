@@ -38,7 +38,7 @@ public class RotinaDeFechamentoService {
     }
 
     @Transactional
-    public void executarFechamento() {
+    public void executarFechamento() throws InterruptedException {
         List<User> prestadores = userService.listarPorPerfil(UsuarioPerfil.ROLE_USER);
         List<NotaFiscal> notasFiscais = new ArrayList<>();
 
@@ -56,7 +56,15 @@ public class RotinaDeFechamentoService {
             notasFiscais.add(notaFiscal);
         });
 
-        notasFiscais.forEach(notificarSolicitacaoDeNotaFiscalService::enviar);
+        for (NotaFiscal notasFiscai : notasFiscais) {
+            enviarEmails(notasFiscai);
+        }
+    }
+
+    private void enviarEmails(NotaFiscal notaFiscal) throws InterruptedException {
+        Thread.sleep(500);
+
+        notificarSolicitacaoDeNotaFiscalService.enviar(notaFiscal);
     }
 
     public BigDecimal calcularValorDaNota(User user, List<HorasExtras> horasExtras) {

@@ -19,7 +19,7 @@ public class RotinaDeFechamentoController {
 
     @PostMapping
     @PreAuthorize("hasRole('GESTOR') || hasRole('ADMIN') || hasRole('FINANCEIRO')")
-    public ResponseEntity<Object> rotinaDeFechamento() {
+    public ResponseEntity<Object> rotinaDeFechamento() throws InterruptedException {
         service.executarFechamento();
         return ResponseEntity.ok().build();
     }
