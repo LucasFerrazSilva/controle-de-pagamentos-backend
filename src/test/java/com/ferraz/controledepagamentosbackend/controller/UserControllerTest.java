@@ -1,15 +1,24 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UserService;
 import com.ferraz.controledepagamentosbackend.domain.user.UserStatus;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.UserDTO;
+import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 import com.ferraz.controledepagamentosbackend.utils.TesteUtils;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -29,6 +38,7 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.createRandomUser;
 import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.login;
@@ -47,8 +57,14 @@ class UserControllerTest {
 	@Autowired
     private MockMvc mvc;
 	
+	@Autowired
+	private UserService userService;
+	
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private ParametroRepository parametroRepository;
 
 	@Autowired
 	private JacksonTester<List<UserDTO>> userDtoListJackson;
@@ -59,17 +75,16 @@ class UserControllerTest {
     void beforeAll() throws Exception {
     	token = login(mvc, userRepository);
     }
-
+    
     @Test
     @DisplayName("Deve ser criado um usuario com as informações corretas e retornar 201 CREATED")
     void createUserSucessTest() throws Exception{
     	ObjectMapper objectMapper = new ObjectMapper();
     	String nome = "Luis";
     	String email = "Teste@teste.com.br";
-    	String senha = "SenhaTeste";
     	BigDecimal salario = new BigDecimal("123.0");
 		UsuarioPerfil perfil = UsuarioPerfil.ROLE_ADMIN;
-    	DadosCreateUserDTO dadosUserDTO = new DadosCreateUserDTO(nome, email, senha, salario, perfil);
+    	DadosCreateUserDTO dadosUserDTO = new DadosCreateUserDTO(nome, email, salario, perfil);
     	String jsonString = objectMapper.writeValueAsString(dadosUserDTO);
     	
     	RequestBuilder request = post(endpoint).contentType(APPLICATION_JSON).content(jsonString).headers(token);
@@ -87,12 +102,11 @@ class UserControllerTest {
     	ObjectMapper mapper = new ObjectMapper();
     	String nome = "Luis";
     	String email = randomUser.getEmail();
-    	String senha = "SenhaTeste";
     	BigDecimal salario = new BigDecimal("100.00");
 		UsuarioPerfil perfil = UsuarioPerfil.ROLE_ADMIN;
     	
     	//Converte dados para uma DTO no corpo da requisição
-    	DadosCreateUserDTO dadosUserDTO = new DadosCreateUserDTO(nome, email, senha, salario, perfil);
+    	DadosCreateUserDTO dadosUserDTO = new DadosCreateUserDTO(nome, email, salario, perfil);
     	String jsonString = mapper.writeValueAsString(dadosUserDTO);
     	
     	//Requisicao e resposta
@@ -211,5 +225,56 @@ class UserControllerTest {
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).isNotBlank();
 	}
-
+	
+	@Test
+	@DisplayName("Deve retornar 201 (CREATED) com a senha aleatoria se parametro 6 Valor == 'S' ")
+	void loginParametroCredenciaisAtivo() throws Exception{
+		ObjectMapper mapper = new ObjectMapper();
+		
+		Parametro parametroEnvioCredenciais = parametroRepository.
+				findById(Parametros.DEVE_ENVIAR_CREDENCIAIS_DE_ACESSO.getId()).orElseThrow();
+		parametroEnvioCredenciais.setValor("S");
+		parametroRepository.save(parametroEnvioCredenciais);
+		
+		User gestor = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+		HttpHeaders loginGestor = login(mvc, gestor);
+		
+		DadosCreateUserDTO dto = new DadosCreateUserDTO("Luis Gustavo Vanique", "cunhagustavo142@gmail.com", 
+				new BigDecimal("12321"), UsuarioPerfil.ROLE_USER);
+		String jsonDTO = mapper.writeValueAsString(dto);
+		RequestBuilder request = post(endpoint).contentType(APPLICATION_JSON).content(jsonDTO).headers(loginGestor);
+		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
+		
+		User user = userRepository.findByEmail(dto.email());
+		
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+		assertThat(new BCryptPasswordEncoder().matches(userService.SENHA_DEFAULT, user.getSenha())).isFalse();
+		assertThat(user).isNotNull();
+	}
+	
+	@Test
+	@DisplayName("Deve retornar 201 (CREATED) e com a senha default se Parametro id 6 == 'N' ")
+	void loginParametroCredenciaisInativo() throws Exception{
+		ObjectMapper mapper = new ObjectMapper();
+		
+		Parametro parametroEnvioCredenciais = parametroRepository.
+				findById(Parametros.DEVE_ENVIAR_CREDENCIAIS_DE_ACESSO.getId()).orElseThrow();
+		parametroEnvioCredenciais.setValor("N");
+		parametroRepository.save(parametroEnvioCredenciais);
+		
+		User gestor = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
+		HttpHeaders loginGestor = login(mvc, gestor);
+		
+		DadosCreateUserDTO dto = new DadosCreateUserDTO("Luis Gustavo Vanique", "luisvanique@gmail.com", 
+				new BigDecimal("12321"), UsuarioPerfil.ROLE_USER);
+		String jsonDTO = mapper.writeValueAsString(dto);
+		RequestBuilder request = post(endpoint).contentType(APPLICATION_JSON).content(jsonDTO).headers(loginGestor);
+		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
+		
+		User user = userRepository.findByEmail(dto.email());
+		
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+		assertThat(new BCryptPasswordEncoder().matches(userService.SENHA_DEFAULT, user.getSenha())).isTrue();
+		assertThat(user).isNotNull();
+	}
 }

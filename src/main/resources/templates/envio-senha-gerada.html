@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitação de Análise</title>
+    <style>
+        * {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: #dedede;
+        }
+
+        #card {
+            width: 60%;
+            margin: 10px auto;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #aaa;
+            padding: 10px 20px;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .row a {
+            width: 49%;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            line-height: 30px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        #assinatura {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="card">
+    	<p>Olá, <span th:text="${nomeUsuario}"></span>!</p>
+    	<p>Seu cadastro foi efetuado no Controle de Pagamentos</p>
+        <p>Login: <span th:text="${emailUsuario}"></span></p>
+       	<p>Senha: <span th:text="${senhaUsuario}"></span>
+  
+        <p id="assinatura">Controle de Pagamentos</p>
+    </div>
+</body>
+</html>

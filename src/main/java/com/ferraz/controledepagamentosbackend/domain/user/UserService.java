@@ -1,34 +1,55 @@
 package com.ferraz.controledepagamentosbackend.domain.user;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
-import com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
+import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.CreateUserValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.DeleteUserValidator;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.UpdateUserValidator;
+import com.ferraz.controledepagamentosbackend.infra.email.EmailService;
+import com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService;
 
 import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
+	private final long PARAMETRO_ENVIO_EMAIL = 6;
+	public final String SENHA_DEFAULT = "senha!123";
+	
+	
+	@Value("${application_sender}")
+    private String applicationSender;
 
 	private final UserRepository repository;
 	private final PasswordEncoder encoder;
 	private final List<UpdateUserValidator> updateUserValidators;
 	private final List<DeleteUserValidator> deleteUserValidators;
 	private final List<CreateUserValidator> createUserValidators;
+	private final SpringTemplateEngine templateEngine;
+	private final EnviarCredenciaisEmail enviarCredenciaisEmail;
+	private final ParametroRepository parametroRepository;
 
-	public UserService(UserRepository repository, PasswordEncoder encoder, 
+	public UserService(UserRepository repository, PasswordEncoder encoder,
 			List<UpdateUserValidator> updateUserValidators, List<DeleteUserValidator> deleteUserValidators,
-			List<CreateUserValidator> createUserValidators) {
+			List<CreateUserValidator> createUserValidators, SpringTemplateEngine templateEngine,
+			EmailService emailService, EnviarCredenciaisEmail enviarCredenciaisEmail, ParametroRepository parametroRepository) {
+		this.parametroRepository = parametroRepository;
+		this.enviarCredenciaisEmail = enviarCredenciaisEmail;
+		this.templateEngine = templateEngine;
 		this.createUserValidators = createUserValidators;
 		this.deleteUserValidators = deleteUserValidators;
 		this.updateUserValidators = updateUserValidators;
@@ -39,14 +60,25 @@ public class UserService {
 	@Transactional
 	public User criarUsuario(DadosCreateUserDTO dados) {
 		createUserValidators.forEach(validator -> validator.validator(dados));
-		var user = new User(dados);
-		user.setSenha(encoder.encode(dados.senha()));
-		repository.save(user);
+		String randomPassword = gerarSenhaAleatoria();
 
+		var user = new User(dados);
+		
+		if(deveEnviarEmailDeCredenciais()) {
+			user.setSenha(encoder.encode(randomPassword));
+			repository.save(user);
+			enviarCredenciaisEmail.enviarCredenciaisEmail(user, randomPassword);
+			return user;
+		}
+		
+		user.setSenha(encoder.encode(SENHA_DEFAULT));
+		repository.save(user);
 		return user;
+		
 	}
 
-	public Page<User> listarUsuarios(Pageable pageable, String nome, String email, UsuarioPerfil perfil, UserStatus status) {
+	public Page<User> listarUsuarios(Pageable pageable, String nome, String email, UsuarioPerfil perfil,
+			UserStatus status) {
 		return repository.findByFiltros(pageable, nome, email, perfil, status);
 
 	}
@@ -60,7 +92,7 @@ public class UserService {
 	}
 
 	@Transactional
-	public User alterarUsuario(Long id, DadosAtualizacaoUserDTO dados) {	
+	public User alterarUsuario(Long id, DadosAtualizacaoUserDTO dados) {
 		updateUserValidators.forEach(validator -> validator.validate(dados, id));
 		User user = repository.getReferenceById(id);
 		user.atualizar(dados);
@@ -71,7 +103,30 @@ public class UserService {
 		return repository.findById(id).orElseThrow();
 	}
 
-    public List<User> listarPorPerfil(UsuarioPerfil usuarioPerfil) {
+	public List<User> listarPorPerfil(UsuarioPerfil usuarioPerfil) {
 		return repository.findByPerfilAndStatusOrderByNome(usuarioPerfil, UserStatus.ATIVO);
+	}
+	
+	private boolean deveEnviarEmailDeCredenciais() {
+        return parametroRepository
+                        .findById(PARAMETRO_ENVIO_EMAIL)
+                        .map(parametro -> "S".equals(parametro.getValor()))
+                        .orElse(false);
+    }
+	
+	private String gerarSenhaAleatoria() {
+		String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lowerCase = "abcdefghijklmnopqrstuvwxyz";
+        String digits = "0123456789";
+        String specialChars = "@#$%^&+=_";
+        String allChars = upperCase + lowerCase + digits + specialChars;
+
+        SecureRandom random = new SecureRandom();
+        String password = random.ints(10, 0, allChars.length())
+                                .mapToObj(allChars::charAt)
+                                .map(String::valueOf)
+                                .collect(Collectors.joining());
+
+		return password;
 	}
 }

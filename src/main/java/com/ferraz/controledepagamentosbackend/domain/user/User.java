@@ -118,7 +118,6 @@ public class User implements UserDetails {
 	public User(DadosCreateUserDTO dados) {
 		this.nome = dados.nome();
 		this.email = dados.email();
-		this.senha = dados.senha();
 		this.salario = dados.salario();
 		this.perfil = dados.perfil();
 		this.status = UserStatus.ATIVO;

@@ -11,9 +11,12 @@ import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO
 import com.ferraz.controledepagamentosbackend.infra.security.dto.AuthenticationDTO;
 import com.ferraz.controledepagamentosbackend.infra.security.dto.TokenDTO;
 import jakarta.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
@@ -32,7 +35,6 @@ public class TesteUtils {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static User defaultUser;
-
 
     public static HttpHeaders login(MockMvc mvc, UserRepository userRepository) throws Exception {
         if (defaultUser == null) {
@@ -56,10 +58,13 @@ public class TesteUtils {
     }
 
     @Transactional
-    public static User createRandomUser(UserRepository userRepository, UsuarioPerfil perfil) {
+    public static User createRandomUser(UserRepository userRepository, UsuarioPerfil perfil)  {
         int randomNumber = new Random().nextInt(1000000);
-        DadosCreateUserDTO dto = new DadosCreateUserDTO("Usuario " + randomNumber, randomNumber + "@mail.com", new BCryptPasswordEncoder().encode(DEFAULT_PASSWORD), new BigDecimal(randomNumber), perfil);
+        DadosCreateUserDTO dto = new DadosCreateUserDTO
+        		("Usuario " + randomNumber, randomNumber + "@mail.com", new BigDecimal(randomNumber), perfil);
+        
         User user = new User(dto);
+        user.setSenha(new BCryptPasswordEncoder().encode(DEFAULT_PASSWORD));
         return userRepository.save(user);
     }
 
