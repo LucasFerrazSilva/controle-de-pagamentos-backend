@@ -26,8 +26,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -66,8 +66,11 @@ class UserControllerTest {
 	@Autowired
 	private PasswordEncoder encoder;
 
+
+
     @BeforeAll
     void beforeAll() throws Exception {
+
     	token = login(mvc, userRepository);
     }
 
@@ -227,14 +230,15 @@ class UserControllerTest {
 	@DisplayName("Deve mudar a senha de um usuário")
 	void testMudarSenha() throws Exception {
 		// Given
+		User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+		HttpHeaders randomUserToken = login(mvc, user);
 		String novaSenha = "Nova_senha123";
-		RequestBuilder request = trocaSenha(novaSenha);
+		RequestBuilder request = montaHeadersTrocarSenha(novaSenha, randomUserToken);
 
 		// When
 		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
 		User novaSenhaUser = userRepository.findById(userDTOJacksonTester.parse(response.getContentAsString()).getObject().id()).orElseThrow();
 		// Then
-
 		assertThat(encoder.matches(novaSenha, novaSenhaUser.getSenha())).isTrue();
 	}
 
@@ -243,7 +247,7 @@ class UserControllerTest {
 	void testMudarSenhaFraca() throws Exception {
 		// Given
 		String novaSenha = "senha_fraca";
-		RequestBuilder request = trocaSenha(novaSenha);
+		RequestBuilder request = montaHeadersTrocarSenha(novaSenha, token);
 
 		// When
 		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
@@ -258,7 +262,7 @@ class UserControllerTest {
 	void testMudarSenhaCurta() throws Exception {
 		// Given
 		String novaSenha = "Senha@1";
-		RequestBuilder request = trocaSenha(novaSenha);
+		RequestBuilder request = montaHeadersTrocarSenha(novaSenha, token);
 
 		// When
 		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
@@ -268,13 +272,13 @@ class UserControllerTest {
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	}
 
-	private RequestBuilder trocaSenha(String novaSenha) throws IOException {
+	private RequestBuilder montaHeadersTrocarSenha(String novaSenha, HttpHeaders token) throws Exception {
 		User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
 		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha, novaSenha);
 		String jsonDto = novaSenhaDTOJacksonTester.write(dto).getJson();
-		RequestBuilder request = put(endpoint + "/mudar-senha/").contentType(APPLICATION_JSON)
-				.content(jsonDto).headers(token);
 
-		return request;
+		MockHttpServletRequestBuilder headers = put(endpoint + "/mudar-senha/").contentType(APPLICATION_JSON)
+				.content(jsonDto).headers(token);
+		return headers;
 	}
 }

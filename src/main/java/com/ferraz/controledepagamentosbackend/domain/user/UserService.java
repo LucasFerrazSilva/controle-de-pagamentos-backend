@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.exceptions.UserNotFoundException;
 import com.ferraz.controledepagamentosbackend.domain.user.validations.NovaSenhaValidator;
 import com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService;
 import org.apache.coyote.BadRequestException;
@@ -83,12 +84,9 @@ public class UserService {
 	}
 
 	@Transactional
-	public User mudarSenha(NovaSenhaDTO dto) throws BadRequestException {
+	public User mudarSenha(NovaSenhaDTO dto) {
 		novaSenhaValidators.forEach(validator -> validator.validate(dto));
-		User user = getLoggedUser();
-        if (user == null) {
-			throw new BadRequestException();
-		}
+		User user = repository.findById(getLoggedUser().getId()).orElseThrow();
 		user.mudarSenha(encoder.encode(dto.novaSenha()), user);
 		repository.save(user);
 

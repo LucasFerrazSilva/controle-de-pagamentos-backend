@@ -79,7 +79,7 @@ public class UserController {
 	}
 
 	@PutMapping("/mudar-senha/")
-	public ResponseEntity<UserDTO> mudarSenha(@RequestBody @Valid NovaSenhaDTO dto) throws BadRequestException {
+	public ResponseEntity<UserDTO> mudarSenha(@RequestBody @Valid NovaSenhaDTO dto) {
 		User user = userService.mudarSenha(dto);
 		UserDTO userDTO = new UserDTO(user);
 
