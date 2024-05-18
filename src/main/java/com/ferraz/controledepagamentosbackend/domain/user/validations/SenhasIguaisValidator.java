@@ -5,14 +5,11 @@ import com.ferraz.controledepagamentosbackend.domain.user.exceptions.SenhaInvali
 import org.springframework.stereotype.Component;
 
 @Component
-public class TamanhoSenhaValidator implements NovaSenhaValidator{
-
-    private static final int TAMANHO_MINIMO = 12;
-
+public class SenhasIguaisValidator implements NovaSenhaValidator{
     @Override
     public void validate(NovaSenhaDTO dto) {
-        if (dto.novaSenha() == null || dto.novaSenha().length() >= TAMANHO_MINIMO){
-            throw new SenhaInvalidaException("A senha precisa ter no mínimo 12 dígitos");
+        if (dto.novaSenha().equals(dto.repeteSenha())){
+            throw new SenhaInvalidaException("As senhas não correspondem");
         }
     }
 }

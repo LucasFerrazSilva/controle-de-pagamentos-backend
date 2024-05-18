@@ -1,5 +1,7 @@
 package com.ferraz.controledepagamentosbackend.domain.user.validations;
 
+import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
+
 public interface NovaSenhaValidator {
-    void validate(String novaSenha);
+    void validate(NovaSenhaDTO dto);
 }

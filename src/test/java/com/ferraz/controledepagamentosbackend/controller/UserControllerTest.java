@@ -60,6 +60,9 @@ class UserControllerTest {
 	private JacksonTester<NovaSenhaDTO> novaSenhaDTOJacksonTester;
 
 	@Autowired
+	JacksonTester<UserDTO> userDTOJacksonTester;
+
+	@Autowired
 	private PasswordEncoder encoder;
 
     @BeforeAll
@@ -224,8 +227,9 @@ class UserControllerTest {
 	void testMudarSenha() throws Exception {
 		// Given
 		User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-		String novaSenha = "nova_senha";
-		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha);
+		String novaSenha = "nova_senha123";
+		String repeteSenha= "nova_senha123";
+		NovaSenhaDTO dto = new NovaSenhaDTO(novaSenha, repeteSenha);
 		String jsonDto = novaSenhaDTOJacksonTester.write(dto).getJson();
 		RequestBuilder request = get(endpoint + "/mudar-senha/" + user.getId()).contentType(APPLICATION_JSON)
 				.content(jsonDto).headers(token);
@@ -234,7 +238,8 @@ class UserControllerTest {
 		MockHttpServletResponse response = mvc.perform(request).andReturn().getResponse();
 
 		// Then
-		assertThat(user.getSenha()).isEqualTo(encoder.encode(novaSenha));
+
+		assertThat(encoder.matches(novaSenha, user.getSenha())).isTrue();
 	}
 
 }

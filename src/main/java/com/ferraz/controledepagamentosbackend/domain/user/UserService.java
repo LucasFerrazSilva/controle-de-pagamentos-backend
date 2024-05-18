@@ -83,7 +83,7 @@ public class UserService {
 
 	@Transactional
 	public User mudarSenha(Long id, NovaSenhaDTO dto){
-		novaSenhaValidators.forEach(validator -> validator.validate(dto.novaSenha()));
+		novaSenhaValidators.forEach(validator -> validator.validate(dto));
 		User user = repository.getReferenceById(id);
 		user.mudarSenha(encoder.encode(dto.novaSenha()), getLoggedUser());
 		repository.save(user);
