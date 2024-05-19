@@ -1,5 +1,6 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
+import com.dropbox.core.DbxException;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscal;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalService;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalStatus;
@@ -12,8 +13,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
 
@@ -66,4 +69,11 @@ public class NotaFiscalController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/upload/{id}")
+    public ResponseEntity<Object> upload(@PathVariable("id") Long id, @RequestParam("file") MultipartFile multipartFile) throws IOException, DbxException {
+        service.upload(id, multipartFile);
+        return ResponseEntity.ok().build();
+    }
+
 }

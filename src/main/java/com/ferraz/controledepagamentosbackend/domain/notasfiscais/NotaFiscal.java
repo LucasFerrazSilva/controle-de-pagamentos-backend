@@ -91,4 +91,9 @@ public class NotaFiscal {
         this.updateUser = user;
     }
 
+    public void marcarComoEnviada(String filePath, User updateUser) {
+        this.filePath = filePath;
+        this.status = NotaFiscalStatus.ENVIADA;
+        update(updateUser);
+    }
 }
