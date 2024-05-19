@@ -63,25 +63,29 @@ public class NotaFiscal {
         this.mes = dto.mes();
         this.ano = dto.ano();
         this.valor = dto.valor();
-        this.filePath = dto.filePath();
-        this.user = user;
         this.status = NotaFiscalStatus.SOLICITADA;
 
         this.createDatetime = LocalDateTime.now();
         this.createUser = createUser;
+        this.user = user;
     }
 
     public void update(AtualizarNotaFiscalDTO dto, User user){
         this.mes = dto.mes();
         this.ano = dto.ano();
         this.valor = dto.valor();
-        this.filePath = dto.filePath();
 
         update(user);
     }
 
     public void deactivate(User user){
         this.status = NotaFiscalStatus.INATIVA;
+
+        update(user);
+    }
+
+    public void marcarComoPago(User user) {
+        this.status = NotaFiscalStatus.PAGA;
 
         update(user);
     }

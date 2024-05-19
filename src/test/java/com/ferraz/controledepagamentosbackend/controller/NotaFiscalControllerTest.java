@@ -84,8 +84,7 @@ class NotaFiscalControllerTest {
                 user.getId(),
                 4,
                 2024,
-                BigDecimal.valueOf(2000.00),
-                "path_teste"
+                BigDecimal.valueOf(2000.00)
         );
         String dadosValidos = novaNotaFiscalDTOJacksonTester.write(dto).getJson();
         RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
@@ -103,7 +102,7 @@ class NotaFiscalControllerTest {
     void list() throws Exception {
         // Given
         User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-        createNotaFiscal(user, notaFiscalRepository);
+        createNotaFiscal(user, user, notaFiscalRepository);
         RequestBuilder requestBuilder = get(ENDPOINT).queryParam("status", NotaFiscalStatus.SOLICITADA.toString()).headers(token);
 
         // When
@@ -119,7 +118,7 @@ class NotaFiscalControllerTest {
     @DisplayName("Deve retornar 200 (OK) quando chamar via GET o endpoint /notas-fiscais passando um id válido")
     void findById() throws Exception {
         User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-        NotaFiscal notaFiscal = createNotaFiscal(user, notaFiscalRepository);
+        NotaFiscal notaFiscal = createNotaFiscal(user, user, notaFiscalRepository);
         RequestBuilder requestBuilder = get(ENDPOINT + "/" + notaFiscal.getId()).headers(token);
 
         // When
@@ -138,15 +137,13 @@ class NotaFiscalControllerTest {
 
         // Given
         User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-        NotaFiscal notaFiscal = createNotaFiscal(user, notaFiscalRepository);
+        NotaFiscal notaFiscal = createNotaFiscal(user, user, notaFiscalRepository);
         BigDecimal novoValor = notaFiscal.getValor().add(BigDecimal.valueOf(1000));
-        String novoCaminho = "novo_caminho";
         AtualizarNotaFiscalDTO dto = new AtualizarNotaFiscalDTO(
                 user.getId(),
                 notaFiscal.getMes(),
                 notaFiscal.getAno(),
-                novoValor,
-                novoCaminho
+                novoValor
         );
 
         String dadosValidos = atualizarNotaFiscalDTOJacksonTester.write(dto).getJson();
@@ -170,7 +167,7 @@ class NotaFiscalControllerTest {
     void deleteTest() throws Exception {
         // Given
         User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
-        NotaFiscal notaFiscal = createNotaFiscal(user, notaFiscalRepository);
+        NotaFiscal notaFiscal = createNotaFiscal(user, user, notaFiscalRepository);
         RequestBuilder requestBuilder = delete(ENDPOINT + "/" + notaFiscal.getId()).headers(token);
 
         // When
@@ -191,8 +188,7 @@ class NotaFiscalControllerTest {
                 user.getId(),
                 LocalDateTime.now().getMonthValue() + 1,
                 2025,
-                BigDecimal.valueOf(2000.00),
-                "path_teste"
+                BigDecimal.valueOf(2000.00)
         );
         String dadosValidos = novaNotaFiscalDTOJacksonTester.write(dto).getJson();
         RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
@@ -211,8 +207,7 @@ class NotaFiscalControllerTest {
                 user.getId(),
                 LocalDateTime.now().getMonthValue(),
                 2025,
-                BigDecimal.valueOf(2000.00),
-                "path_teste"
+                BigDecimal.valueOf(2000.00)
         );
         String dadosValidos = novaNotaFiscalDTOJacksonTester.write(dto).getJson();
         RequestBuilder requestBuilder = post(ENDPOINT).contentType(APPLICATION_JSON).content(dadosValidos).headers(token);
@@ -223,4 +218,23 @@ class NotaFiscalControllerTest {
         // Then
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
+
+    @Test
+    @DisplayName("Deve marcar uma nota fiscal como paga")
+    void testNotaFiscalPaga() throws Exception {
+        // Given
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        User financeiro = createRandomUser(userRepository, UsuarioPerfil.ROLE_FINANCEIRO);
+        NotaFiscal notaFiscal = createNotaFiscal(user, financeiro, notaFiscalRepository);
+        RequestBuilder requestBuilder = put(ENDPOINT + "/marcar-como-paga/" + notaFiscal.getId()).headers(token);
+
+        // When
+        MockHttpServletResponse response = mvc.perform(requestBuilder).andReturn().getResponse();
+
+        // Then
+        NotaFiscalDTO dto = notaFiscalDTOJacksonTester.parse(response.getContentAsString()).getObject();
+        assertThat(dto.status()).isEqualTo(NotaFiscalStatus.PAGA);
+
+    }
+
 }

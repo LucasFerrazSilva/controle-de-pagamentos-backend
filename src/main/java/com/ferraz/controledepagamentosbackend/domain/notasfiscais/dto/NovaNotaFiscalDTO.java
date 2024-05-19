@@ -15,16 +15,14 @@ public record NovaNotaFiscalDTO(
         Integer ano,
         @NotNull
         @Min(0)
-        BigDecimal valor,
-        String filePath
+        BigDecimal valor
 ) {
         public NovaNotaFiscalDTO(User prestador, BigDecimal valor) {
                 this(
                         prestador.getId(),
                         LocalDate.now().getMonthValue(),
                         LocalDate.now().getYear(),
-                        valor,
-                        null
+                        valor
                 );
         }
 }

@@ -14,7 +14,6 @@ public record AtualizarNotaFiscalDTO(
         Integer ano,
         @NotNull
         @Min(0)
-        BigDecimal valor,
-        String filePath
+        BigDecimal valor
 ) {
 }

@@ -67,7 +67,7 @@ public class TesteUtils {
 
         DadosCreateUserDTO dto = new DadosCreateUserDTO
         		("Usuario " + randomNumber, randomNumber + "@mail.com", new BigDecimal(randomNumber), perfil);
-        
+
         User user = new User(dto);
         user.setSenha(new BCryptPasswordEncoder().encode(DEFAULT_PASSWORD));
         return userRepository.save(user);
@@ -89,15 +89,14 @@ public class TesteUtils {
     }
 
     @Transactional
-    public static NotaFiscal createNotaFiscal(User user, NotaFiscalRepository repository){
+    public static NotaFiscal createNotaFiscal(User createUser, User user, NotaFiscalRepository repository){
         NovaNotaFiscalDTO dto = new NovaNotaFiscalDTO(
                 user.getId(),
                 LocalDateTime.now().getMonthValue(),
                 LocalDateTime.now().getYear(),
-                BigDecimal.valueOf(2000),
-                "TEST"
+                BigDecimal.valueOf(2000)
         );
-        NotaFiscal notaFiscal = new NotaFiscal(dto, user, user);
+        NotaFiscal notaFiscal = new NotaFiscal(dto, createUser, user);
         return repository.save(notaFiscal);
     }
 
