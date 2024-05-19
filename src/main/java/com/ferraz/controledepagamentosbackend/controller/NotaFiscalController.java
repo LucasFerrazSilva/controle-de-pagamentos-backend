@@ -93,6 +93,8 @@ public class NotaFiscalController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header("Content-disposition", "attachment; filename="+ fileName)
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Expose-Headers", "Content-Disposition, filename")
                 .body(new InputStreamResource(inputStream));
     }
 
