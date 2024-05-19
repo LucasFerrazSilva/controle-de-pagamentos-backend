@@ -1,6 +1,5 @@
 package com.ferraz.controledepagamentosbackend.domain.emails;
 
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,8 +36,6 @@ public class EnviarCredenciaisEmail {
 	
 	
 	private String buildHtml(User user, String randomPassword) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
         Map<String, Object> variables = new HashMap<>();
         variables.put("nomeUsuario", user.getNome());
         variables.put("emailUsuario", user.getEmail());

@@ -30,8 +30,6 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
-	private final long PARAMETRO_ENVIO_EMAIL = 6;
-	private final long PARAMETRO_SENHA_DEFAULT = 7;
 	
 	@Value("${application_sender}")
     private String applicationSender;
@@ -114,7 +112,7 @@ public class UserService {
 	
 	private boolean deveEnviarEmailDeCredenciais() {
         return parametroRepository
-                        .findById(PARAMETRO_ENVIO_EMAIL)
+                        .findById(Parametros.DEVE_ENVIAR_CREDENCIAIS_DE_ACESSO.getId())
                         .map(parametro -> "S".equals(parametro.getValor()))
                         .orElse(false);
     }
@@ -127,12 +125,10 @@ public class UserService {
         String allChars = upperCase + lowerCase + digits + specialChars;
 
         SecureRandom random = new SecureRandom();
-        String password = random.ints(10, 0, allChars.length())
+        return random.ints(10, 0, allChars.length())
                                 .mapToObj(allChars::charAt)
                                 .map(String::valueOf)
                                 .collect(Collectors.joining());
-
-		return password;
 }
 
 
