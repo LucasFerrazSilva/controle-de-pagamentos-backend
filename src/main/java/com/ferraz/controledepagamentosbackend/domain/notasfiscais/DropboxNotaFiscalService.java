@@ -7,26 +7,23 @@ import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.ListFolderResult;
 import com.dropbox.core.v2.files.Metadata;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
-import com.ferraz.controledepagamentosbackend.infra.exception.ValidationException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 
-import static com.ferraz.controledepagamentosbackend.infra.security.AuthenticationService.getLoggedUser;
-
 @Service
-public class UploadNotaFiscalService {
+public class DropboxNotaFiscalService {
 
-    private static String ACCESS_TOKEN = "***REMOVED***";
+    @Value("${dropbox_token}")
+    private String accessToken;
 
     public String upload(MultipartFile multipartFile, User user) throws DbxException, IOException {
-        if (!multipartFile.getContentType().toLowerCase().equals("application/pdf"))
-            throw new ValidationException("contentType", "O arquivo deve ser um PDF");
-
-        DbxRequestConfig config = DbxRequestConfig.newBuilder("controle-de-pagamentos").build();
-        DbxClientV2 client = new DbxClientV2(config, ACCESS_TOKEN);
+        DbxClientV2 client = buildClient();
 
         String folder = "/%s/%s".formatted(LocalDate.now().getYear(), LocalDate.now().getMonthValue());
         String fileName = getAvailableFileName(client, folder, user);
@@ -38,8 +35,17 @@ public class UploadNotaFiscalService {
         }
     }
 
-    private static String getAvailableFileName(DbxClientV2 client, String folder, User user) throws DbxException {
-        String userName = user.getNome().replaceAll(" ", "_");
+    public InputStream download(NotaFiscal notaFiscal) throws DbxException {
+        return buildClient().files().download(notaFiscal.getFilePath()).getInputStream();
+    }
+
+    private DbxClientV2 buildClient() {
+        DbxRequestConfig config = DbxRequestConfig.newBuilder("controle-de-pagamentos").build();
+        return new DbxClientV2(config, accessToken);
+    }
+
+    private String getAvailableFileName(DbxClientV2 client, String folder, User user) throws DbxException {
+        String userName = user.getNome().replace(" ", "_");
         String fileName = "NF_%s_%s_%s.pdf".formatted(userName, LocalDate.now().getMonthValue(), LocalDate.now().getYear());
 
         ListFolderResult result = client.files().listFolder(folder);

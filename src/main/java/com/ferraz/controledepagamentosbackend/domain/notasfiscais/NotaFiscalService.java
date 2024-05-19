@@ -4,11 +4,13 @@ import com.dropbox.core.DbxException;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.AtualizarNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.validations.AtualizarNotasFiscaisValidator;
+import com.ferraz.controledepagamentosbackend.domain.notasfiscais.validations.DownloadNotaFiscalValidator;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.validations.NovasNotasFiscaisValidator;
+import com.ferraz.controledepagamentosbackend.domain.notasfiscais.validations.UploadNotaFiscalValidator;
+import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoService;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
 import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
-import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoService;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -26,17 +29,21 @@ public class NotaFiscalService {
     private final NotaFiscalRepository repository;
     private final List<NovasNotasFiscaisValidator> novasNotasFiscaisValidators;
     private final List<AtualizarNotasFiscaisValidator> atualizarNotasFiscaisValidators;
+    private final List<UploadNotaFiscalValidator> uploadNotaFiscalValidatorList;
+    private final List<DownloadNotaFiscalValidator> downloadNotaFiscalValidatorList;
     private final NotificacaoService notificacaoService;
     private final UserRepository userRepository;
-    private final UploadNotaFiscalService uploadNotaFiscalService;
+    private final DropboxNotaFiscalService dropboxNotaFiscalService;
 
-    public NotaFiscalService(NotaFiscalRepository notaFiscalRepository, List<NovasNotasFiscaisValidator> novasNotasFiscaisValidators, List<AtualizarNotasFiscaisValidator> atualizarNotasFiscaisValidators, NotificacaoService notificacaoService, UserRepository userRepository, UploadNotaFiscalService uploadNotaFiscalService) {
+    public NotaFiscalService(NotaFiscalRepository notaFiscalRepository, List<NovasNotasFiscaisValidator> novasNotasFiscaisValidators, List<AtualizarNotasFiscaisValidator> atualizarNotasFiscaisValidators, List<UploadNotaFiscalValidator> uploadNotaFiscalValidatorList, List<DownloadNotaFiscalValidator> downloadNotaFiscalValidatorList, NotificacaoService notificacaoService, UserRepository userRepository, DropboxNotaFiscalService dropboxNotaFiscalService) {
         this.repository = notaFiscalRepository;
         this.novasNotasFiscaisValidators = novasNotasFiscaisValidators;
         this.atualizarNotasFiscaisValidators = atualizarNotasFiscaisValidators;
+        this.uploadNotaFiscalValidatorList = uploadNotaFiscalValidatorList;
+        this.downloadNotaFiscalValidatorList = downloadNotaFiscalValidatorList;
         this.notificacaoService = notificacaoService;
         this.userRepository = userRepository;
-        this.uploadNotaFiscalService = uploadNotaFiscalService;
+        this.dropboxNotaFiscalService = dropboxNotaFiscalService;
     }
 
     @Transactional
@@ -79,18 +86,25 @@ public class NotaFiscalService {
     }
 
     @Transactional
-    public void upload(Long id, MultipartFile multipartFile) throws IOException, DbxException {
-        NotaFiscal notaFiscal = repository.findById(id).orElseThrow();
-        String filePath = uploadNotaFiscalService.upload(multipartFile, notaFiscal.getUser());
-        notaFiscal.marcarComoEnviada(filePath, getLoggedUser());
-        repository.save(notaFiscal);
-    }
-
-    @Transactional
     public NotaFiscal marcarComoPaga(Long id){
         NotaFiscal notaFiscal = repository.findById(id).orElseThrow();
         notaFiscal.marcarComoPago(getLoggedUser());
         return repository.save(notaFiscal);
+    }
+
+    @Transactional
+    public void upload(Long id, MultipartFile multipartFile) throws IOException, DbxException {
+        uploadNotaFiscalValidatorList.forEach(validator -> validator.validate(multipartFile));
+        NotaFiscal notaFiscal = repository.findById(id).orElseThrow();
+        String filePath = dropboxNotaFiscalService.upload(multipartFile, notaFiscal.getUser());
+        notaFiscal.marcarComoEnviada(filePath, getLoggedUser());
+        repository.save(notaFiscal);
+    }
+
+    public InputStream download(Long id) throws DbxException {
+        downloadNotaFiscalValidatorList.forEach(validator -> validator.validate(id));
+        NotaFiscal notaFiscal = repository.findById(id).orElseThrow();
+        return dropboxNotaFiscalService.download(notaFiscal);
     }
 
 }
