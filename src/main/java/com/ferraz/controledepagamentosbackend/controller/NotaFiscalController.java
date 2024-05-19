@@ -86,8 +86,13 @@ public class NotaFiscalController {
     @GetMapping("/download/{id}")
     public ResponseEntity<Object> download(@PathVariable("id") Long id) throws DbxException {
         InputStream inputStream = service.download(id);
+        NotaFiscal notaFiscal = service.findById(id);
+        String[] pathSplit = notaFiscal.getFilePath().split("/");
+        String fileName = pathSplit[pathSplit.length - 1];
+
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
+                .header("Content-disposition", "attachment; filename="+ fileName)
                 .body(new InputStreamResource(inputStream));
     }
 
