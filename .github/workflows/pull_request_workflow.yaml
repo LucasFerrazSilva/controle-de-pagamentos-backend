@@ -28,6 +28,8 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
+        env:
+          DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
         with:
           context: .
           file: ./Dockerfile

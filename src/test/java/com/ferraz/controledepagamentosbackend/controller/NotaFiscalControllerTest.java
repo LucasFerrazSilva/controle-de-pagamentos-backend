@@ -20,7 +20,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -32,6 +34,7 @@ import java.util.Optional;
 
 import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
@@ -234,7 +237,42 @@ class NotaFiscalControllerTest {
         // Then
         NotaFiscalDTO dto = notaFiscalDTOJacksonTester.parse(response.getContentAsString()).getObject();
         assertThat(dto.status()).isEqualTo(NotaFiscalStatus.PAGA);
+    }
 
+    @Test
+    @DisplayName("Deve fazer o upload e download de uma nota fiscal no dropbox")
+    void testDropbox() throws Exception {
+        // Given
+        User user = createRandomUser(userRepository, UsuarioPerfil.ROLE_USER);
+        HttpHeaders userToken = login(mvc, user);
+        NotaFiscal notaFiscal = createNotaFiscal(user, user, notaFiscalRepository);
+
+        MockMultipartFile multipartFile
+                = new MockMultipartFile(
+                "file",
+                "hello.pdf",
+                MediaType.APPLICATION_PDF_VALUE,
+                "Hello, World!".getBytes()
+        );
+
+        RequestBuilder uploadRequest =
+                multipart(PUT, ENDPOINT + "/upload/" + notaFiscal.getId())
+                    .file(multipartFile).headers(userToken);
+
+        // When - Upload
+        MockHttpServletResponse responseUpload = mvc.perform(uploadRequest).andReturn().getResponse();
+
+        // Then - Upload
+        assertThat(responseUpload.getStatus()).isEqualTo(HttpStatus.OK.value());
+
+
+        // When - Download
+        MockHttpServletResponse responseDownload =
+                mvc.perform(get(ENDPOINT + "/download/" + notaFiscal.getId()).headers(userToken))
+                .andReturn().getResponse();
+
+        // Then - Upload
+        assertThat(responseDownload.getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
 }

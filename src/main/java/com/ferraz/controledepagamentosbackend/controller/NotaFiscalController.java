@@ -1,5 +1,6 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
+import com.dropbox.core.DbxException;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscal;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalService;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.NotaFiscalStatus;
@@ -7,14 +8,19 @@ import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.AtualizarN
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFiscalDTO;
 import jakarta.validation.Valid;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 
@@ -69,6 +75,27 @@ public class NotaFiscalController {
     public ResponseEntity<Object> delete(@PathVariable("id") Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/upload/{id}")
+    public ResponseEntity<Object> upload(@PathVariable("id") Long id, @RequestParam("file") MultipartFile multipartFile) throws IOException, DbxException {
+        service.upload(id, multipartFile);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/download/{id}")
+    public ResponseEntity<Object> download(@PathVariable("id") Long id) throws DbxException {
+        InputStream inputStream = service.download(id);
+        NotaFiscal notaFiscal = service.findById(id);
+        String[] pathSplit = notaFiscal.getFilePath().split("/");
+        String fileName = pathSplit[pathSplit.length - 1];
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header("Content-disposition", "attachment; filename="+ fileName)
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Expose-Headers", "Content-Disposition, filename")
+                .body(new InputStreamResource(inputStream));
     }
 
     @PutMapping("/marcar-como-paga/{id}")
