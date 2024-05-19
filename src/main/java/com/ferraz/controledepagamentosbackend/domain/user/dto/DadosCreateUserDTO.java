@@ -15,9 +15,6 @@ public record DadosCreateUserDTO(
 		@Email
 		String email,
 		
-		@NotBlank
-		String senha,
-		
 		@NotNull
 		BigDecimal salario,
 		
