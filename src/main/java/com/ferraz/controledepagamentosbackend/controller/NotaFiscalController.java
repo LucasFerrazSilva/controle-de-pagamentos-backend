@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -31,6 +32,7 @@ public class NotaFiscalController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('GESTOR') || hasRole('ADMIN') || hasRole('FINANCEIRO')")
     public ResponseEntity<NotaFiscalDTO> create(@RequestBody @Valid NovaNotaFiscalDTO dto, UriComponentsBuilder uriComponentsBuilder){
         NotaFiscal notaFiscal = service.create(dto);
         NotaFiscalDTO notaFiscalDTO = new NotaFiscalDTO(notaFiscal);
@@ -58,6 +60,7 @@ public class NotaFiscalController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('GESTOR') || hasRole('ADMIN') || hasRole('FINANCEIRO')")
     public ResponseEntity<NotaFiscalDTO> update(@PathVariable("id") Long id, @RequestBody @Valid AtualizarNotaFiscalDTO dto){
         NotaFiscal notaFiscal = service.update(id, dto);
         NotaFiscalDTO notaFiscalDTO = new NotaFiscalDTO(notaFiscal);
@@ -65,6 +68,7 @@ public class NotaFiscalController {
         return ResponseEntity.ok(notaFiscalDTO);
     }
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('GESTOR') || hasRole('ADMIN') || hasRole('FINANCEIRO')")
     public ResponseEntity<Object> delete(@PathVariable("id") Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
@@ -76,4 +80,12 @@ public class NotaFiscalController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/marcar-como-paga/{id}")
+    @PreAuthorize("hasRole('GESTOR') || hasRole('ADMIN') || hasRole('FINANCEIRO')")
+    public ResponseEntity<NotaFiscalDTO> marcarComoPaga(@PathVariable("id") Long id){
+        NotaFiscal notaFiscal = service.marcarComoPaga(id);
+        NotaFiscalDTO notaFiscalDTO = new NotaFiscalDTO(notaFiscal);
+
+        return ResponseEntity.ok(notaFiscalDTO);
+    }
 }

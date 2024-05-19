@@ -5,9 +5,10 @@ import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.AtualizarN
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.dto.NovaNotaFiscalDTO;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.validations.AtualizarNotasFiscaisValidator;
 import com.ferraz.controledepagamentosbackend.domain.notasfiscais.validations.NovasNotasFiscaisValidator;
-import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoService;
 import com.ferraz.controledepagamentosbackend.domain.user.User;
 import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+import com.ferraz.controledepagamentosbackend.domain.user.UsuarioPerfil;
+import com.ferraz.controledepagamentosbackend.domain.notificacao.NotificacaoService;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,6 +51,9 @@ public class NotaFiscalService {
     }
 
     public Page<NotaFiscal> list(Pageable pageable, Long idUsuario, Integer mes, Integer ano, BigDecimal valor, NotaFiscalStatus status){
+        if (getLoggedUser().getPerfil().equals(UsuarioPerfil.ROLE_USER))
+            idUsuario = getLoggedUser().getId();
+
         return repository.findByFiltros(pageable, idUsuario , mes, ano, valor, status);
     }
 
@@ -81,4 +85,12 @@ public class NotaFiscalService {
         notaFiscal.marcarComoEnviada(filePath, getLoggedUser());
         repository.save(notaFiscal);
     }
+
+    @Transactional
+    public NotaFiscal marcarComoPaga(Long id){
+        NotaFiscal notaFiscal = repository.findById(id).orElseThrow();
+        notaFiscal.marcarComoPago(getLoggedUser());
+        return repository.save(notaFiscal);
+    }
+
 }
