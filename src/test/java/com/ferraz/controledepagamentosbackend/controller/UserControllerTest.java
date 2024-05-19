@@ -248,6 +248,9 @@ class UserControllerTest {
 		parametroEnvioCredenciais.setValor("S");
 		parametroRepository.save(parametroEnvioCredenciais);
 		
+		Parametro parametroSenhaDefault = parametroRepository.findById(Parametros.SENHA_DEFAULT.getId()).orElseThrow();
+		String senhaDefault = parametroSenhaDefault.getValor();
+		
 		User gestor = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
 		HttpHeaders loginGestor = login(mvc, gestor);
 		
@@ -260,7 +263,7 @@ class UserControllerTest {
 		User user = userRepository.findByEmail(dto.email());
 		
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
-		assertThat(new BCryptPasswordEncoder().matches(userService.default_password, user.getSenha())).isFalse();
+		assertThat(new BCryptPasswordEncoder().matches(senhaDefault, user.getSenha())).isFalse();
 		assertThat(user).isNotNull();
 	}
 	
@@ -272,6 +275,10 @@ class UserControllerTest {
 		Parametro parametroEnvioCredenciais = parametroRepository.
 				findById(Parametros.DEVE_ENVIAR_CREDENCIAIS_DE_ACESSO.getId()).orElseThrow();
 		parametroEnvioCredenciais.setValor("N");
+		
+		Parametro parametroSenhaDefault = parametroRepository.findById(Parametros.SENHA_DEFAULT.getId()).orElseThrow();
+		String senhaDefault = parametroSenhaDefault.getValor();
+		
 		parametroRepository.save(parametroEnvioCredenciais);
 		
 		User gestor = createRandomUser(userRepository, UsuarioPerfil.ROLE_GESTOR);
@@ -286,7 +293,7 @@ class UserControllerTest {
 		User user = userRepository.findByEmail(dto.email());
 		
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
-		assertThat(new BCryptPasswordEncoder().matches(userService.default_password, user.getSenha())).isTrue();
+		assertThat(new BCryptPasswordEncoder().matches(senhaDefault, user.getSenha())).isTrue();
 		assertThat(user).isNotNull();
 	}
 

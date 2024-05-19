@@ -14,7 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ferraz.controledepagamentosbackend.domain.emails.EnviarCredenciaisEmail;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametro;
 import com.ferraz.controledepagamentosbackend.domain.parameters.ParametroRepository;
+import com.ferraz.controledepagamentosbackend.domain.parameters.Parametros;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosAtualizacaoUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.DadosCreateUserDTO;
 import com.ferraz.controledepagamentosbackend.domain.user.dto.NovaSenhaDTO;
@@ -29,10 +31,7 @@ import jakarta.transaction.Transactional;
 @Service
 public class UserService {
 	private final long PARAMETRO_ENVIO_EMAIL = 6;
-	
-	@Value("${senha.default}")
-	public String default_password;
-	
+	private final long PARAMETRO_SENHA_DEFAULT = 7;
 	
 	@Value("${application_sender}")
     private String applicationSender;
@@ -64,6 +63,8 @@ public class UserService {
 	public User criarUsuario(DadosCreateUserDTO dados) {
 		createUserValidators.forEach(validator -> validator.validator(dados));
 		String randomPassword = gerarSenhaAleatoria();
+		Parametro parametroSenhaDefault = parametroRepository.findById(Parametros.SENHA_DEFAULT.getId()).orElseThrow();
+		String senhaDefault = parametroSenhaDefault.getValor();
 
 		var user = new User(dados);
 		
@@ -74,7 +75,7 @@ public class UserService {
 			return user;
 		}
 		
-		user.setSenha(encoder.encode(default_password));
+		user.setSenha(encoder.encode(senhaDefault));
 		repository.save(user);
 		return user;
 		
