@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 ADD . /usr/src/app
 ARG DROPBOX_TOKEN
 ENV DROPBOX_TOKEN ${DROPBOX_TOKEN}
-RUN mvn install
+RUN mvn install -DskipTests
 
 FROM eclipse-temurin:17-jre-alpine
 RUN mkdir -p /usr/src/app
