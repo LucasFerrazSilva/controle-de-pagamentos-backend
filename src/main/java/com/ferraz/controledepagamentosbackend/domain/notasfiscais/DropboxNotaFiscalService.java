@@ -2,6 +2,7 @@ package com.ferraz.controledepagamentosbackend.domain.notasfiscais;
 
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
+import com.dropbox.core.oauth.DbxCredential;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.ListFolderResult;
@@ -21,6 +22,12 @@ public class DropboxNotaFiscalService {
 
     @Value("${dropbox_token}")
     private String accessToken;
+    @Value("${dropbox_refresh_token}")
+    private String refreshToken;
+    @Value("${dropbox_app_key}")
+    private String appKey;
+    @Value("${dropbox_app_secret}")
+    private String appSecret;
 
     public String upload(MultipartFile multipartFile, User user) throws DbxException, IOException {
         DbxClientV2 client = buildClient();
@@ -39,9 +46,21 @@ public class DropboxNotaFiscalService {
         return buildClient().files().download(notaFiscal.getFilePath()).getInputStream();
     }
 
-    private DbxClientV2 buildClient() {
+    private DbxClientV2 buildClient() throws DbxException {
         DbxRequestConfig config = DbxRequestConfig.newBuilder("controle-de-pagamentos").build();
-        return new DbxClientV2(config, accessToken);
+        DbxCredential credential = new DbxCredential(
+                accessToken,
+                14400l,
+                refreshToken,
+                appKey,
+                appSecret);
+        DbxClientV2 dbxClientV2 = new DbxClientV2(config, credential);
+
+        if (credential.getRefreshToken() != null && credential.aboutToExpire()) {
+            dbxClientV2.refreshAccessToken();
+        }
+
+        return dbxClientV2;
     }
 
     private String getAvailableFileName(DbxClientV2 client, String folder, User user) throws DbxException {
