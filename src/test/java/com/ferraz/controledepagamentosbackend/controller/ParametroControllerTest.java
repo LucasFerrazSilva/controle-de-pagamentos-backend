@@ -1,9 +1,11 @@
 package com.ferraz.controledepagamentosbackend.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
-import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
-import jakarta.transaction.Transactional;
+import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.login;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,11 +22,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
-import static com.ferraz.controledepagamentosbackend.utils.TesteUtils.login;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import com.ferraz.controledepagamentosbackend.domain.parameters.dto.UpdateParametroDTO;
+import com.ferraz.controledepagamentosbackend.domain.user.UserRepository;
+
+import jakarta.transaction.Transactional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -52,7 +53,6 @@ class ParametroControllerTest {
     @DisplayName("Deve conseguir uma lista de parametros")
     void getAllParameters() throws Exception {
         // Given
-        ObjectMapper objectMapper = new ObjectMapper();
         RequestBuilder requestBuilder = get(ENDPOINT).contentType(APPLICATION_JSON).headers(token);
 
         // When

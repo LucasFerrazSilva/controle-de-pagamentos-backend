@@ -1,19 +1,17 @@
 package com.ferraz.controledepagamentosbackend.infra.exception;
 
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.json.MappingJacksonInputMessage;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 
 class ExceptionsHandlerTest {
 
@@ -147,7 +145,8 @@ class ExceptionsHandlerTest {
     @Test
     void tratarErro400() {
         //Given
-        HttpMessageNotReadableException exception = new HttpMessageNotReadableException("message");
+        HttpMessageNotReadableException exception = new HttpMessageNotReadableException("message", 
+        		new MappingJacksonInputMessage(null, null));
 
         // When
         ResponseEntity<ExceptionMessageDTO> response = exceptionsHandler.tratarErro400(exception);
