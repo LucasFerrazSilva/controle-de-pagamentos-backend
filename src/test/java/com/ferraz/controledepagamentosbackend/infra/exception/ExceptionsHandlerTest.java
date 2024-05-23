@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpInputMessage;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.MappingJacksonInputMessage;
